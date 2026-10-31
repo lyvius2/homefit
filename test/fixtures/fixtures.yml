@@ -1,0 +1,16 @@
+fridge:
+  name: (예시) 냉장고
+  kind: appliance
+  width_mm: 913
+  depth_mm: 740
+  height_mm: 1780
+  clearance_mm: 50
+  color: "#d0d4d8"
+
+sofa:
+  name: (예시) 소파
+  kind: furniture
+  width_mm: 2200
+  depth_mm: 900
+  height_mm: 850
+  color: "#8c8f94"

@@ -1,0 +1,44 @@
+v1_fridge:
+  layout_version: main_v1
+  fixture: fridge
+  name: (예시) 냉장고
+  kind: appliance
+  width_mm: 913
+  depth_mm: 740
+  height_mm: 1780
+  clearance_mm: 50
+  color: "#d0d4d8"
+  x_mm: 1000
+  y_mm: 1000
+  z_mm: 0
+  rotation_deg: 0
+
+v2_fridge:
+  layout_version: main_v2
+  fixture: fridge
+  name: (예시) 냉장고
+  kind: appliance
+  width_mm: 913
+  depth_mm: 740
+  height_mm: 1780
+  clearance_mm: 50
+  color: "#d0d4d8"
+  x_mm: 1200
+  y_mm: 1000
+  z_mm: 0
+  rotation_deg: 90
+
+v2_sofa_orphan:
+  layout_version: main_v2
+  fixture: null
+  name: 삭제된 소파
+  kind: furniture
+  width_mm: 2000
+  depth_mm: 900
+  height_mm: 800
+  clearance_mm: 0
+  color: "#8c8f94"
+  x_mm: 5000
+  y_mm: 3000
+  z_mm: 0
+  rotation_deg: 0

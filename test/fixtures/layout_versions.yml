@@ -1,0 +1,10 @@
+main_v1:
+  layout: main
+  version_no: 1
+  memo: 첫 저장
+  created_at: 2026-11-01 00:00:00
+
+main_v2:
+  layout: main
+  version_no: 2
+  created_at: 2026-11-01 01:00:00

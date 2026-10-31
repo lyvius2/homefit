@@ -1,0 +1,22 @@
+sample:
+  name: 예시 주택
+  ceiling_height_mm: 2300
+  dimension_basis: centerline
+  plan_status: draft
+  plan:
+    schema: 1
+    unit: mm
+    image: null
+    scale: { px_per_mm: null, measured_mm: null, verify: null }
+    walls: []
+    openings: []
+
+empty:
+  name: 빈 주택
+  plan:
+    schema: 1
+    unit: mm
+    image: null
+    scale: { px_per_mm: null, measured_mm: null, verify: null }
+    walls: []
+    openings: []
