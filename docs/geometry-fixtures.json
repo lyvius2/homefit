@@ -1,0 +1,455 @@
+{
+  "description": "Ruby Geometry::*(app/lib/geometry)와 TS geometry.ts 가 공유하는 테스트 벡터. 설계서 Section 3. shape.kind 는 box(집기 풋프린트) 또는 wall(벽 선분). 꼭짓점 비교는 소수점 6자리 반올림.",
+  "epsilon": 1e-6,
+  "corners": [
+    {
+      "id": "box_axis_aligned",
+      "shape": {
+        "kind": "box",
+        "x": 1000,
+        "y": 2000,
+        "width": 600,
+        "depth": 400,
+        "rotation_deg": 0
+      },
+      "expect": [
+        [700, 1800],
+        [1300, 1800],
+        [1300, 2200],
+        [700, 2200]
+      ]
+    },
+    {
+      "id": "box_rotated_90_clockwise",
+      "shape": {
+        "kind": "box",
+        "x": 1000,
+        "y": 2000,
+        "width": 600,
+        "depth": 400,
+        "rotation_deg": 90
+      },
+      "expect": [
+        [1200, 1700],
+        [1200, 2300],
+        [800, 2300],
+        [800, 1700]
+      ]
+    },
+    {
+      "id": "box_rotated_180",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 500,
+        "rotation_deg": 180
+      },
+      "expect": [
+        [500, 250],
+        [-500, 250],
+        [-500, -250],
+        [500, -250]
+      ]
+    },
+    {
+      "id": "box_rotated_30",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 2000,
+        "depth": 1000,
+        "rotation_deg": 30
+      },
+      "expect": [
+        [-616.025404, -933.012702],
+        [1116.025404, 66.987298],
+        [616.025404, 933.012702],
+        [-1116.025404, -66.987298]
+      ]
+    },
+    {
+      "id": "wall_horizontal_extended_by_half_thickness",
+      "shape": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "expect": [
+        [-100, -100],
+        [10000, -100],
+        [10000, 100],
+        [-100, 100]
+      ]
+    },
+    {
+      "id": "wall_vertical_downward",
+      "shape": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [0, 6300],
+        "thickness_mm": 200
+      },
+      "expect": [
+        [100, -100],
+        [100, 6400],
+        [-100, 6400],
+        [-100, -100]
+      ]
+    },
+    {
+      "id": "wall_diagonal_45",
+      "shape": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [3000, 3000],
+        "thickness_mm": 200
+      },
+      "expect": [
+        [0, -141.421356],
+        [3141.421356, 3000],
+        [3000, 3141.421356],
+        [-141.421356, 0]
+      ]
+    }
+  ],
+  "sat": [
+    {
+      "id": "axis_aligned_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 800,
+        "y": 300,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": true
+    },
+    {
+      "id": "axis_aligned_separated",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 2000,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": false
+    },
+    {
+      "id": "axis_aligned_edge_touch_is_not_intersect",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 1000,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": false
+    },
+    {
+      "id": "axis_aligned_corner_touch_is_not_intersect",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 1000,
+        "y": 1000,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": false
+    },
+    {
+      "id": "axis_aligned_one_mm_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 999,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": true
+    },
+    {
+      "id": "contained",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 3000,
+        "depth": 3000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 100,
+        "y": -200,
+        "width": 400,
+        "depth": 400,
+        "rotation_deg": 37
+      },
+      "expect": true
+    },
+    {
+      "id": "rotated_45_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 900,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 45
+      },
+      "expect": true
+    },
+    {
+      "id": "rotated_45_aabb_overlaps_but_sat_separates",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 1000,
+        "y": 1000,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 45
+      },
+      "expect": false
+    },
+    {
+      "id": "rotation_90_makes_it_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 2000,
+        "depth": 1000,
+        "rotation_deg": 90
+      },
+      "b": {
+        "kind": "box",
+        "x": 0,
+        "y": 1400,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": true
+    },
+    {
+      "id": "rotation_0_same_boxes_do_not_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 2000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 0,
+        "y": 1400,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "expect": false
+    },
+    {
+      "id": "rotated_90_edge_touch_is_not_intersect",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "box",
+        "x": 1000,
+        "y": 0,
+        "width": 2000,
+        "depth": 1000,
+        "rotation_deg": 90
+      },
+      "expect": false
+    },
+    {
+      "id": "rotated_30_vs_rotated_300_overlap",
+      "a": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "width": 2000,
+        "depth": 400,
+        "rotation_deg": 30
+      },
+      "b": {
+        "kind": "box",
+        "x": 600,
+        "y": -600,
+        "width": 2000,
+        "depth": 400,
+        "rotation_deg": 300
+      },
+      "expect": true
+    },
+    {
+      "id": "wall_touching_fixture_is_not_intersect",
+      "a": {
+        "kind": "box",
+        "x": 1000,
+        "y": 500,
+        "width": 1000,
+        "depth": 800,
+        "rotation_deg": 0
+      },
+      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "expect": false
+    },
+    {
+      "id": "wall_penetrating_fixture",
+      "a": {
+        "kind": "box",
+        "x": 1000,
+        "y": 450,
+        "width": 1000,
+        "depth": 800,
+        "rotation_deg": 0
+      },
+      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "expect": true
+    },
+    {
+      "id": "fixture_beyond_wall_end_misses_extended_cap",
+      "a": {
+        "kind": "box",
+        "x": 10600,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "expect": false
+    },
+    {
+      "id": "fixture_hits_wall_extended_cap",
+      "a": {
+        "kind": "box",
+        "x": 10450,
+        "y": 0,
+        "width": 1000,
+        "depth": 1000,
+        "rotation_deg": 0
+      },
+      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "expect": true
+    },
+    {
+      "id": "diagonal_wall_crosses_box",
+      "a": {
+        "kind": "box",
+        "x": 1500,
+        "y": 1700,
+        "width": 400,
+        "depth": 400,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [3000, 3000],
+        "thickness_mm": 200
+      },
+      "expect": true
+    },
+    {
+      "id": "diagonal_wall_misses_box",
+      "a": {
+        "kind": "box",
+        "x": 1500,
+        "y": 2100,
+        "width": 400,
+        "depth": 400,
+        "rotation_deg": 0
+      },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [3000, 3000],
+        "thickness_mm": 200
+      },
+      "expect": false
+    },
+    {
+      "id": "two_walls_meeting_at_corner",
+      "a": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "b": { "kind": "wall", "a": [0, 0], "b": [0, 6300], "thickness_mm": 200 },
+      "expect": true
+    }
+  ]
+}
