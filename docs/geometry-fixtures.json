@@ -367,7 +367,12 @@
         "depth": 800,
         "rotation_deg": 0
       },
-      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
       "expect": false
     },
     {
@@ -380,7 +385,12 @@
         "depth": 800,
         "rotation_deg": 0
       },
-      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
       "expect": true
     },
     {
@@ -393,7 +403,12 @@
         "depth": 1000,
         "rotation_deg": 0
       },
-      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
       "expect": false
     },
     {
@@ -406,7 +421,12 @@
         "depth": 1000,
         "rotation_deg": 0
       },
-      "b": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
       "expect": true
     },
     {
@@ -447,9 +467,462 @@
     },
     {
       "id": "two_walls_meeting_at_corner",
-      "a": { "kind": "wall", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 },
-      "b": { "kind": "wall", "a": [0, 0], "b": [0, 6300], "thickness_mm": 200 },
+      "a": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "b": {
+        "kind": "wall",
+        "a": [0, 0],
+        "b": [0, 6300],
+        "thickness_mm": 200
+      },
       "expect": true
+    }
+  ],
+  "collisions_description": "footprints 는 집기 바닥면 중심·치수·회전. expect 는 위반이 있는 배치만 index 오름차순, reasons 는 overlap(상대 index 오름차순) → wall(벽 순서) → out_of_bounds 순.",
+  "collisions": [
+    {
+      "id": "no_violations",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1000,
+          "y": 1000,
+          "width": 913,
+          "depth": 740,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "two_fixtures_overlap",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1000,
+          "y": 1000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        },
+        {
+          "x": 1500,
+          "y": 1000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["overlap:1"]
+        },
+        {
+          "placement_index": 1,
+          "reasons": ["overlap:0"]
+        }
+      ]
+    },
+    {
+      "id": "fixture_hits_wall",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1000,
+          "y": 400,
+          "width": 1000,
+          "depth": 800,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["wall:w01"]
+        }
+      ]
+    },
+    {
+      "id": "touching_wall_is_ok",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1000,
+          "y": 500,
+          "width": 1000,
+          "depth": 800,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "fixture_out_of_bounds",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 10500,
+          "y": 3000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["out_of_bounds"]
+        }
+      ]
+    },
+    {
+      "id": "one_mm_tolerance_outside_bounds",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 9501,
+          "y": 3000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["wall:w02"]
+        }
+      ]
+    },
+    {
+      "id": "no_walls_means_no_bounds_or_wall_check",
+      "walls": [],
+      "footprints": [
+        {
+          "x": -5000,
+          "y": -5000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        },
+        {
+          "x": 99999,
+          "y": 99999,
+          "width": 10,
+          "depth": 10,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "rotated_bar_overlaps_one_of_two",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 3000,
+          "y": 3000,
+          "width": 2000,
+          "depth": 400,
+          "rotation_deg": 45
+        },
+        {
+          "x": 3800,
+          "y": 3800,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        },
+        {
+          "x": 3000,
+          "y": 2000,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["overlap:1"]
+        },
+        {
+          "placement_index": 1,
+          "reasons": ["overlap:0"]
+        }
+      ]
+    },
+    {
+      "id": "overlap_wall_and_bounds_together",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 10300,
+          "y": 3000,
+          "width": 1000,
+          "depth": 1000,
+          "rotation_deg": 0
+        },
+        {
+          "x": 10000,
+          "y": 3000,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["overlap:1", "wall:w02", "out_of_bounds"]
+        },
+        {
+          "placement_index": 1,
+          "reasons": ["overlap:0", "wall:w02", "out_of_bounds"]
+        }
+      ]
+    },
+    {
+      "id": "bounds_of_outer_walls",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [],
+      "expect": [],
+      "expect_bounds": {
+        "min_x": -100,
+        "min_y": -100,
+        "max_x": 10000,
+        "max_y": 6400
+      }
     }
   ]
 }
