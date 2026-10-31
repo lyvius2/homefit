@@ -1,0 +1,74 @@
+<%= form_with model: fixture, class: "form form--card" do |form| %>
+  <% if fixture.errors.any? %>
+    <div class="form__errors">
+      <strong>저장하지 못했습니다.</strong>
+      <ul>
+        <% fixture.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form__row form__row--2">
+    <div class="field <%= "field--invalid" if fixture.errors[:name].any? %>">
+      <%= form.label :name, "이름" %>
+      <%= form.text_field :name, required: true, maxlength: 100, autofocus: fixture.new_record? %>
+    </div>
+    <div class="field">
+      <%= form.label :kind, "종류" %>
+      <%= form.select :kind, kind_options %>
+    </div>
+  </div>
+
+  <p class="field__hint">
+    W는 정면에서 본 좌우 너비, D는 앞뒤 깊이, H는 높이입니다. 모두 정수 mm. 정면 이미지는 3D 박스의 앞면에 붙습니다.
+  </p>
+  <div class="form__row form__row--3">
+    <div class="field <%= "field--invalid" if fixture.errors[:width_mm].any? %>">
+      <%= form.label :width_mm, "W 너비 (mm)" %>
+      <%= form.number_field :width_mm, min: 10, max: 10_000, step: 1, required: true %>
+    </div>
+    <div class="field <%= "field--invalid" if fixture.errors[:depth_mm].any? %>">
+      <%= form.label :depth_mm, "D 깊이 (mm)" %>
+      <%= form.number_field :depth_mm, min: 10, max: 10_000, step: 1, required: true %>
+    </div>
+    <div class="field <%= "field--invalid" if fixture.errors[:height_mm].any? %>">
+      <%= form.label :height_mm, "H 높이 (mm)" %>
+      <%= form.number_field :height_mm, min: 10, max: 5_000, step: 1, required: true %>
+    </div>
+  </div>
+
+  <div class="form__row form__row--2">
+    <div class="field <%= "field--invalid" if fixture.errors[:clearance_mm].any? %>">
+      <%= form.label :clearance_mm, "여유 간격 (mm)" %>
+      <%= form.number_field :clearance_mm, min: 0, step: 10 %>
+      <span class="field__hint">벽과 띄울 거리, 문 열림 여유. 충돌 판정에는 넣지 않고 안내선만 그립니다.</span>
+    </div>
+    <div class="field <%= "field--invalid" if fixture.errors[:color].any? %>">
+      <%= form.label :color, "색" %>
+      <%= form.color_field :color %>
+      <span class="field__hint">이미지가 없을 때 박스 색.</span>
+    </div>
+  </div>
+
+  <div class="field <%= "field--invalid" if fixture.errors[:image].any? %>">
+    <%= form.label :image, "정면 이미지" %>
+    <% if fixture.image.attached? && fixture.image.representable? %>
+      <%= image_tag fixture.image.variant(:texture), alt: "#{fixture.name} 정면", width: 160 %>
+      <label class="small"><%= form.check_box :remove_image %> 현재 이미지 삭제</label>
+    <% end %>
+    <%= form.file_field :image, accept: "image/jpeg,image/png,image/webp" %>
+    <span class="field__hint">JPEG·PNG·WebP, 최대 5 MB. 선택 사항.</span>
+  </div>
+
+  <div class="field">
+    <%= form.label :notes, "메모" %>
+    <%= form.text_area :notes, rows: 3, placeholder: "모델명, 구매처 등" %>
+  </div>
+
+  <div class="form__actions">
+    <%= form.submit fixture.new_record? ? "집기 등록" : "저장", class: "btn btn--primary" %>
+    <%= link_to "취소", fixtures_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>

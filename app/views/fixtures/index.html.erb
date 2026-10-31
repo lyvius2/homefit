@@ -1,7 +1,43 @@
 <% content_for :title, "집기" %>
-<div class="page-head"><h1>집기</h1></div>
-<ul class="cards">
-  <% @fixtures.each do |fixture| %>
-    <li class="card"><div class="card__body"><p class="card__title"><%= fixture.name %></p></div></li>
+<div class="page-head">
+  <h1>집기</h1>
+  <div class="page-head__actions">
+    <%= link_to "새 집기", new_fixture_path, class: "btn btn--primary" %>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="종류 필터">
+  <%= link_to "전체 #{@counts.values.sum}", fixtures_path, class: class_names("tabs__tab", "tabs__tab--current": @kind.nil?) %>
+  <% Fixture.kinds.each_key do |kind| %>
+    <%= link_to "#{kind_label(kind)} #{@counts.fetch(kind, 0)}", fixtures_path(kind: kind),
+          class: class_names("tabs__tab", "tabs__tab--current": @kind == kind) %>
   <% end %>
-</ul>
+</nav>
+
+<% if @fixtures.empty? %>
+  <p class="empty">집기가 없습니다. "새 집기"로 치수를 등록하세요.</p>
+<% else %>
+  <ul class="cards">
+    <% @fixtures.each do |fixture| %>
+      <li class="card">
+        <%= link_to edit_fixture_path(fixture), class: "card__media" do %>
+          <% if fixture.image.attached? && fixture.image.representable? %>
+            <%= image_tag fixture.image.variant(:texture), alt: "#{fixture.name} 정면" %>
+          <% else %>
+            <div class="swatch" style="background: <%= fixture.color %>" aria-label="색 <%= fixture.color %>"></div>
+          <% end %>
+        <% end %>
+        <div class="card__body">
+          <p class="card__title"><%= link_to fixture.name, edit_fixture_path(fixture) %></p>
+          <div class="card__meta">
+            <span class="mono"><%= format_dimensions(fixture.width_mm, fixture.depth_mm, fixture.height_mm) %></span>
+            <span class="badge badge--<%= fixture.kind %>"><%= kind_label(fixture.kind) %></span>
+            <% if fixture.clearance_mm.positive? %>
+              <span>여유 <%= format_mm(fixture.clearance_mm) %></span>
+            <% end %>
+          </div>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

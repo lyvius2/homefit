@@ -1,0 +1,9 @@
+<% content_for :title, @fixture.name %>
+<div class="page-head">
+  <h1><%= @fixture.name %></h1>
+  <div class="page-head__actions">
+    <%= two_step_delete_button "집기 삭제", fixture_path(@fixture) %>
+  </div>
+</div>
+<%= render "form", fixture: @fixture %>
+<p class="small muted">삭제해도 이미 저장된 배치 버전의 치수·이름 스냅샷은 유지됩니다.</p>

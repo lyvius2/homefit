@@ -52,3 +52,16 @@ class FixtureTest < ActiveSupport::TestCase
     assert_equal 913, placement.width_mm
   end
 end
+
+class FixtureImageTest < ActiveSupport::TestCase
+  test "accepts jpeg image and rejects svg" do
+    fixture = fixtures(:sofa)
+
+    fixture.image = fixture_file_upload("front.jpg", "image/jpeg")
+    assert fixture.valid?, fixture.errors.full_messages.inspect
+
+    fixture.image = fixture_file_upload("evil.svg", "image/svg+xml")
+    assert_not fixture.valid?
+    assert_match(/허용되지 않는 형식/, fixture.errors[:image].first)
+  end
+end

@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     resource :floor_plan, only: [ :create, :destroy ], controller: "houses/floor_plans"  # HTML 도면 업로드/삭제
     resources :layouts, only: [ :new, :create ], shallow: true
   end
-  resources :fixtures, only: [ :index ]
+  resources :fixtures
   resources :layouts, only: [ :index, :show ]
 
   root "houses#index"
