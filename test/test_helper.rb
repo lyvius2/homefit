@@ -11,6 +11,7 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    # 서비스 단위 테스트에서도 fixture_file_upload 를 쓸 수 있게 한다
+    include ActionDispatch::TestProcess::FixtureFile
   end
 end

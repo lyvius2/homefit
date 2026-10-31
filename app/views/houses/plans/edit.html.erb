@@ -1,0 +1,11 @@
+<% content_for :title, "도면 편집 · #{@house.name}" %>
+<div class="page-head">
+  <h1>도면 편집 — <%= @house.name %></h1>
+  <div class="page-head__actions">
+    <%= link_to "주택으로", house_path(@house), class: "btn btn--ghost" %>
+  </div>
+</div>
+<%# React 섬. 레지스트리에 PlanEditor 가 등록되면(M4) 아래 안내 대신 에디터가 마운트된다. %>
+<div class="island-placeholder" data-island="PlanEditor" data-props="<%= { house_id: @house.id }.to_json %>">
+  <p>도면 에디터는 M4에서 제공됩니다.</p>
+</div>

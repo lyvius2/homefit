@@ -19,12 +19,22 @@ class House < ApplicationRecord
   attribute :plan, default: -> { DEFAULT_PLAN.deep_dup }
 
   has_many :layouts, dependent: :destroy
-  has_one_attached :floor_plan
+
+  # 도면 이미지. editor: 에디터 배경(긴 변 2,200 px), thumb: 목록 카드. 변형은 요청 시 생성된다.
+  has_one_attached :floor_plan do |attachable|
+    attachable.variant :editor, resize_to_limit: [ 2200, 2200 ]
+    attachable.variant :thumb, resize_to_limit: [ 480, 480 ]
+  end
 
   validates :name, presence: true, length: { maximum: 100 }
   validates :ceiling_height_mm, numericality: { only_integer: true, in: 2000..4000 }
   validates :plan, presence: true
   validate :plan_matches_schema
+
+  def walls = plan.fetch("walls", [])
+
+  # 외곽 바운딩 박스(Plans::Bounds::Box) 또는 벽이 없으면 nil
+  def bounds = Plans::Bounds.call(plan)
 
   private
 

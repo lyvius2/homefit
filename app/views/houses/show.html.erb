@@ -1,0 +1,94 @@
+<% content_for :title, @house.name %>
+<% bounds = @house.bounds %>
+<div class="page-head">
+  <h1><%= @house.name %></h1>
+  <div class="page-head__actions">
+    <span class="badge badge--<%= @house.plan_status %>"><%= @house.plan_status_valid? ? "도면 검증됨" : "도면 초안" %></span>
+    <%= link_to "도면 편집", edit_house_plan_path(@house), class: "btn" %>
+    <%= link_to "새 배치도", new_house_layout_path(@house), class: "btn btn--primary" %>
+  </div>
+</div>
+
+<div class="two-col">
+  <div>
+    <section class="panel">
+      <div class="panel__head"><h2>기본 정보</h2></div>
+      <%= render "form", house: @house %>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h2>배치도</h2>
+        <%= link_to "새 배치도", new_house_layout_path(@house), class: "btn btn--small" %>
+      </div>
+      <% if @layouts.empty? %>
+        <p class="muted">아직 배치도가 없습니다.</p>
+      <% else %>
+        <table class="table">
+          <thead>
+            <tr><th>이름</th><th>최신 버전</th><th>저장 시각</th></tr>
+          </thead>
+          <tbody>
+            <% @layouts.each do |layout| %>
+              <% latest = layout.layout_versions.max_by(&:version_no) %>
+              <tr>
+                <td><%= link_to layout.name, layout_path(layout) %></td>
+                <td class="mono"><%= latest ? "v#{latest.version_no}" : "—" %></td>
+                <td class="mono small"><%= latest ? l(latest.created_at, format: :short) : "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </section>
+  </div>
+
+  <div>
+    <section class="panel">
+      <div class="panel__head"><h2>도면 이미지</h2></div>
+      <% if @house.floor_plan.attached? %>
+        <% if @house.floor_plan.representable? %>
+          <%= image_tag @house.floor_plan.variant(:thumb), alt: "#{@house.name} 도면", class: "mb" %>
+        <% end %>
+        <p class="small muted mono">
+          <%= @house.floor_plan.filename %> ·
+          <%= @house.plan.dig("image", "width_px") %> × <%= @house.plan.dig("image", "height_px") %> px
+        </p>
+        <div class="form__actions">
+          <%= two_step_delete_button "도면 삭제", house_floor_plan_path(@house), class: "btn--small" %>
+        </div>
+      <% else %>
+        <p class="muted">도면 이미지가 없으면 100 mm 격자 위에 벽을 그립니다.</p>
+      <% end %>
+
+      <%= form_with url: house_floor_plan_path(@house), method: :post, multipart: true, class: "form" do |form| %>
+        <div class="field">
+          <%= form.label :file, @house.floor_plan.attached? ? "도면 교체" : "도면 올리기" %>
+          <%= form.file_field :file, accept: "image/jpeg,image/png,image/webp", required: true %>
+          <span class="field__hint">JPEG·PNG·WebP, 최대 15 MB. 교체하면 도면 상태가 초안으로 돌아갑니다.</span>
+        </div>
+        <div class="form__actions">
+          <%= form.submit "올리기", class: "btn" %>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2>도면 요약</h2></div>
+      <table class="table">
+        <tbody>
+          <tr><th>외곽</th><td class="mono"><%= bounds ? "#{number_with_delimiter(bounds.width_mm)} × #{number_with_delimiter(bounds.height_mm)} mm" : "벽 없음" %></td></tr>
+          <tr><th>벽</th><td class="mono"><%= @house.walls.size %>개</td></tr>
+          <tr><th>개구부</th><td class="mono"><%= @house.plan.fetch("openings", []).size %>개</td></tr>
+          <tr><th>축척</th><td class="mono"><%= @house.plan.dig("scale", "px_per_mm") ? "#{@house.plan.dig('scale', 'px_per_mm')} px/mm" : "미설정" %></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel panel--danger">
+      <div class="panel__head"><h2>삭제</h2></div>
+      <p class="small muted">주택을 삭제하면 배치도 <%= @layouts.size %>개와 모든 버전이 함께 삭제됩니다. 되돌릴 수 없습니다.</p>
+      <%= two_step_delete_button "주택 삭제", house_path(@house) %>
+    </section>
+  </div>
+</div>

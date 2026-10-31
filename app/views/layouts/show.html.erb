@@ -1,0 +1,11 @@
+<% content_for :title, @layout.name %>
+<div class="page-head">
+  <h1><%= @layout.name %></h1>
+  <div class="page-head__actions">
+    <%= link_to @layout.house.name, house_path(@layout.house), class: "btn btn--ghost" %>
+  </div>
+</div>
+<%# React 섬. 레지스트리에 LayoutEditor 가 등록되면(M5) 아래 안내 대신 에디터가 마운트된다. %>
+<div class="island-placeholder" data-island="LayoutEditor" data-props="<%= { layout_id: @layout.id }.to_json %>">
+  <p>배치 에디터는 M5에서 제공됩니다.</p>
+</div>

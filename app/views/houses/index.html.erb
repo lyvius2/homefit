@@ -1,7 +1,35 @@
 <% content_for :title, "주택" %>
-<h1>주택</h1>
-<ul>
-  <% @houses.each do |house| %>
-    <li><%= house.name %></li>
-  <% end %>
-</ul>
+<div class="page-head">
+  <h1>주택</h1>
+  <div class="page-head__actions">
+    <%= link_to "새 주택", new_house_path, class: "btn btn--primary" %>
+  </div>
+</div>
+
+<% if @houses.empty? %>
+  <p class="empty">아직 주택이 없습니다. "새 주택"으로 시작하세요.</p>
+<% else %>
+  <ul class="cards">
+    <% @houses.each do |house| %>
+      <% bounds = house.bounds %>
+      <li class="card">
+        <%= link_to house, class: "card__media" do %>
+          <% if house.floor_plan.attached? && house.floor_plan.representable? %>
+            <%= image_tag house.floor_plan.variant(:thumb), alt: "#{house.name} 도면" %>
+          <% else %>
+            <span class="small">도면 없음</span>
+          <% end %>
+        <% end %>
+        <div class="card__body">
+          <p class="card__title"><%= link_to house.name, house %></p>
+          <div class="card__meta">
+            <span class="mono"><%= bounds ? "#{number_with_delimiter(bounds.width_mm)} × #{number_with_delimiter(bounds.height_mm)} mm" : "벽 없음" %></span>
+            <span>벽 <%= house.walls.size %>개</span>
+            <span>배치도 <%= house.layouts.size %>개</span>
+            <span class="badge badge--<%= house.plan_status %>"><%= house.plan_status_valid? ? "검증됨" : "초안" %></span>
+          </div>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

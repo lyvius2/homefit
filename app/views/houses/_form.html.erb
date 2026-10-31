@@ -1,0 +1,42 @@
+<%= form_with model: house, class: "form form--card" do |form| %>
+  <% if house.errors.any? %>
+    <div class="form__errors">
+      <strong>저장하지 못했습니다.</strong>
+      <ul>
+        <% house.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field <%= "field--invalid" if house.errors[:name].any? %>">
+    <%= form.label :name, "이름" %>
+    <%= form.text_field :name, required: true, maxlength: 100, autofocus: house.new_record? %>
+  </div>
+
+  <div class="form__row form__row--2">
+    <div class="field <%= "field--invalid" if house.errors[:ceiling_height_mm].any? %>">
+      <%= form.label :ceiling_height_mm, "천장고 (mm)" %>
+      <%= form.number_field :ceiling_height_mm, min: 2000, max: 4000, step: 10, required: true %>
+      <span class="field__hint">2,000–4,000 mm. 아파트는 보통 2,300 mm.</span>
+    </div>
+    <div class="field">
+      <%= form.label :dimension_basis, "치수 기준" %>
+      <%= form.select :dimension_basis, [ [ "벽 중심선 (분양 평면도)", "centerline" ], [ "안목치수 (실측)", "clear" ] ] %>
+      <span class="field__hint">분양 평면도는 대개 벽 중심선 기준이라 실제보다 100–150 mm 큽니다.</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <%= form.label :notes, "메모" %>
+    <%= form.text_area :notes, rows: 3 %>
+  </div>
+
+  <div class="form__actions">
+    <%= form.submit house.new_record? ? "주택 만들기" : "저장", class: "btn btn--primary" %>
+    <% if house.new_record? %>
+      <%= link_to "취소", houses_path, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+<% end %>
