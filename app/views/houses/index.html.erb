@@ -1,0 +1,7 @@
+<% content_for :title, "주택" %>
+<h1>주택</h1>
+<ul>
+  <% @houses.each do |house| %>
+    <li><%= house.name %></li>
+  <% end %>
+</ul>

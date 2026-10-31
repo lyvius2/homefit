@@ -115,3 +115,4 @@ bin/rails console
 - (M1) npm: `react`, `react-dom`, `three`, `@react-three/fiber`, `@react-three/drei`, `konva`, `react-konva`, `zustand`, `@hotwired/turbo-rails`, `@hotwired/stimulus`, `vitest`
 - (M1) `dotenv-rails`(development/test) — 외부 MySQL 접속 정보를 `.env`에서 읽기 위해. 키 목록은 `.env.example`. 소유자 승인 2026-11-01
 - (M1) npm dev: `vite`, `vite-plugin-ruby`, `@vitejs/plugin-react`, `typescript`, `@types/react`, `@types/react-dom`, `@types/three`, `@types/node`, `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `globals`, `prettier` — Section 2 표의 빌드·정적 분석 행을 실제 패키지로 옮긴 것
+- (M2) `bcrypt` — Rails 8 인증 제너레이터(has_secure_password). 비밀번호 재설정 흐름은 제거(ADR 0002)

@@ -1,6 +1,21 @@
 # 예시 데이터. 여러 번 실행해도 같은 결과가 되도록 이름 기준 find_or_create 를 쓴다.
 # 좌표계: 도면 좌상단 원점, x 오른쪽 +, y 아래 +, 단위 정수 mm (R-01, R-02).
 
+# --- 로그인 계정 (회원가입 없음, 설계서 Section 6) ---
+# .env 의 HOMEFIT_SEED_USERS="a@example.com:비밀번호,b@example.com:비밀번호" 를 읽는다.
+# 이미 있는 계정은 건드리지 않는다(비밀번호 변경은 bin/rails console 에서 User#update!(password:)).
+seed_users = ENV.fetch("HOMEFIT_SEED_USERS", "").split(",").map(&:strip).reject(&:empty?)
+if seed_users.empty?
+  puts "seed: HOMEFIT_SEED_USERS 가 없어 계정을 만들지 않습니다 (.env.example 참고)"
+else
+  seed_users.each do |entry|
+    email, password = entry.split(":", 2)
+    raise ArgumentError, "HOMEFIT_SEED_USERS 형식 오류: #{entry.inspect} (email:password)" if email.blank? || password.blank?
+
+    User.find_or_create_by!(email_address: email.strip.downcase) { |u| u.password = password }
+  end
+end
+
 # --- 예시 주택: 59㎡형 비슷한 외곽 9900 × 6300 (벽 중심선 기준) ---
 # 외곽 4면(두께 200) + 칸막이(두께 120): 좌상단 침실1(3600×3000), 우상단 침실2(3300×3000),
 # 좌하단 욕실(2100×1800). 나머지는 거실·주방.
@@ -81,4 +96,4 @@ unless layout.layout_versions.exists?(version_no: 1)
   end
 end
 
-puts "seed: houses=#{House.count} fixtures=#{Fixture.count} layouts=#{Layout.count} versions=#{LayoutVersion.count} placements=#{Placement.count}"
+puts "seed: users=#{User.count} houses=#{House.count} fixtures=#{Fixture.count} layouts=#{Layout.count} versions=#{LayoutVersion.count} placements=#{Placement.count}"
