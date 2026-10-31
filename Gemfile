@@ -57,3 +57,7 @@ end
 gem "vite_rails", "~> 3.11"
 
 gem "json_schemer", "~> 2.5"
+
+gem "erb_lint", "~> 0.9.0", groups: [ :development, :test ], require: false
+
+gem "lograge", "~> 0.15.1"

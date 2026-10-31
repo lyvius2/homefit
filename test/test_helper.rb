@@ -4,8 +4,8 @@ require "rails/test_help"
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # 테스트 DB 가 외부 MySQL 서버라 워커마다 DB 를 만드는 병렬 실행은 끈다 (workers: 1 이면 병렬화하지 않음).
+    parallelize(workers: 1)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

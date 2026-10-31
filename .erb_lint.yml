@@ -1,0 +1,25 @@
+---
+# erb_lint 기본 린터 세트를 쓴다. Rubocop 린터는 .rubocop.yml 을 상속하되,
+# ERB 조각에는 맞지 않는 파일 단위 cop 들을 끈다.
+glob: "**/*.{html,turbo_stream}{+*,}.erb"
+exclude:
+  - "**/vendor/**/*"
+  - "**/node_modules/**/*"
+  - "**/tmp/**/*"
+EnableDefaultLinters: true
+linters:
+  Rubocop:
+    enabled: true
+    rubocop_config:
+      inherit_from:
+        - .rubocop.yml
+      Layout/InitialIndentation:
+        Enabled: false
+      Layout/TrailingEmptyLines:
+        Enabled: false
+      Layout/TrailingWhitespace:
+        Enabled: false
+      Lint/UselessAssignment:
+        Enabled: false
+      Style/FrozenStringLiteralComment:
+        Enabled: false

@@ -1,23 +1,14 @@
-# Run using bin/ci
+# bin/ci 로 실행한다. 모든 단계를 끝까지 돌린 뒤 하나라도 실패했으면 non-zero 로 종료한다
+# (ActiveSupport::ContinuousIntegration). 순서는 CLAUDE.md / 킥오프 8번 그대로.
 
 CI.run do
-  step "Setup", "bin/setup --skip-server"
-
-  step "Style: Ruby", "bin/rubocop"
-
-  step "Security: Gem audit", "bin/bundler-audit"
-  step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  step "Style: Ruby (rubocop)", "bin/rubocop"
+  step "Security: Brakeman", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  step "Style: ERB (erb_lint)", "bin/erb_lint --lint-all"
+  step "Style: TypeScript (eslint)", "npm run -s lint"
+  step "Style: Prettier", "npm run -s format:check"
+  step "Types: tsc --noEmit", "npm run -s typecheck"
+  step "Tests: Vitest", "npm run -s test"
   step "Tests: Rails", "bin/rails test"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
-
-  # Optional: Run system tests
-  # step "Tests: System", "bin/rails test:system"
-
-  # Optional: set a green GitHub commit status to unblock PR merge.
-  # Requires the `gh` CLI and `gh extension install basecamp/gh-signoff`.
-  # if success?
-  #   step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"
-  # else
-  #   failure "Signoff: CI failed. Do not merge or deploy.", "Fix the issues and try again."
-  # end
 end
