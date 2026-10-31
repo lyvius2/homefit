@@ -21,23 +21,20 @@
 - libvips (`brew install vips`), MySQL 클라이언트 라이브러리 (`brew install mysql-client`)
 - Chrome (시스템 테스트)
 
-## 설정
-
-1. `.env.example`을 `.env`로 복사하고 DB 접속 정보를 채웁니다. `.env`는 커밋하지 않습니다.
-2. `bin/setup` 으로 의존성 설치, DB 준비, 시드를 한 번에 실행합니다.
+## 설정과 명령
 
 ```bash
-cp .env.example .env     # 이후 값 편집
-bin/setup
-```
-
-## 명령
-
-```bash
-bin/dev                 # Rails + Vite 개발 서버
-bin/ci                  # 린트·정적 분석·테스트 전부 (커밋 전 필수)
-bin/rails test          # 단위·통합 테스트
-bin/rails test:system   # 브라우저 시스템 테스트
+cp .env.example .env         # 1. 외부 MySQL 접속 정보(HOMEFIT_DB_*)를 채운다. .env 는 커밋하지 않는다
+bin/setup                    # 2. bundle install, npm ci, db:prepare(마이그레이션+시드) 를 한 번에. 이어서 bin/dev 실행
+bin/setup --skip-server      #    서버를 띄우지 않고 준비만
+bin/dev                      # Rails(3000) + Vite dev 서버(3036) 를 Procfile.dev 로 함께 실행 (foreman)
+bin/ci                       # rubocop → brakeman → erb_lint → eslint → prettier → tsc → vitest → rails test → 시드
+                             #    커밋 전 필수. 하나라도 실패하면 non-zero
+bin/rails test               # Ruby 단위·통합 테스트만
+bin/rails test test/lib/geometry   # 기하만 (Ruby)
+npx vitest run app/frontend/lib    # 기하·유틸만 (TS)
+bin/rails test:system        # 브라우저 시스템 테스트 (Chrome)
+bin/rails console            # 시드 데이터 확인: House.first.plan, Layout.first.latest_version.placements
 ```
 
 ## 저장소 지도

@@ -14,11 +14,13 @@ FileUtils.chdir APP_ROOT do
 
   puts "== Installing dependencies =="
   system("bundle check") || system!("bundle install")
+  system! "npm ci"
 
-  # puts "\n== Copying sample files =="
-  # unless File.exist?("config/database.yml")
-  #   FileUtils.cp "config/database.yml.sample", "config/database.yml"
-  # end
+  # DB 접속 정보는 .env 에서 읽는다 (dotenv-rails). 없으면 예시를 복사하고 멈춘다.
+  unless File.exist?(".env")
+    FileUtils.cp ".env.example", ".env"
+    abort "\n.env 를 만들었습니다. 외부 MySQL 접속 정보(HOMEFIT_DB_*)를 채운 뒤 bin/setup 을 다시 실행하세요."
+  end
 
   puts "\n== Preparing database =="
   system! "bin/rails db:prepare"
