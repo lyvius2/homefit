@@ -43,3 +43,29 @@ class PlanEditorTest < ApplicationSystemTestCase
     assert houses(:empty).reload.plan_status_draft?
   end
 end
+
+class PlanEditorWithImageTest < ApplicationSystemTestCase
+  test "set the scale on a floor plan image, then walls can be drawn" do
+    house = houses(:empty)
+    FloorPlans::Attach.call(house, fixture_file_upload("floor_plan.png", "image/png"))
+
+    sign_in_through_browser users(:one)
+    visit edit_house_plan_path(house)
+    assert_selector "[data-testid=plan-canvas] canvas"
+
+    # 이미지가 있고 축척이 없으면 축척 도구로 시작하고 벽 그리기는 비활성
+    assert_selector "button[role=radio][aria-checked=true]", text: "축척"
+    assert_selector "button[role=radio][disabled]", text: "벽 그리기"
+    assert_text "아직 축척이 없습니다"
+
+    fill_in "실제 길이 (mm)", with: 3600
+    canvas = find("[data-testid=plan-canvas]")
+    canvas.click(x: 200, y: 300, offset: :top_left)
+    canvas.click(x: 560, y: 300, offset: :top_left)
+
+    assert_text "축척 설정:"
+    assert_selector "button[role=radio][aria-checked=true]", text: "벽 그리기"
+    assert_no_selector "button[role=radio][disabled]", text: "벽 그리기"
+    assert_text "px/mm"
+  end
+end
