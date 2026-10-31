@@ -5,9 +5,7 @@ module Api
       before_action :set_layout
 
       def index
-        versions = @layout.layout_versions
-          .select("layout_versions.*, (SELECT COUNT(*) FROM placements p WHERE p.layout_version_id = layout_versions.id) AS placements_count")
-          .order(version_no: :desc)
+        versions = @layout.layout_versions.with_placements_count.order(version_no: :desc)
         render_data(versions.map { |v| { version_no: v.version_no, memo: v.memo, created_at: v.created_at.utc.iso8601(3), placements_count: v.placements_count } })
       end
 

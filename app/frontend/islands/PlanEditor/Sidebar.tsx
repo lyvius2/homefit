@@ -41,6 +41,7 @@ export default function Sidebar() {
   const save = usePlanEditor((s) => s.save);
   const validate = usePlanEditor((s) => s.validate);
   const pendingPx = usePlanEditor((s) => s.pendingPx);
+  const readOnly = usePlanEditor((s) => s.readOnly);
 
   if (!plan || !house) return null;
 
@@ -55,7 +56,9 @@ export default function Sidebar() {
         <h2 className="tool-group__title">도구</h2>
         <div className="tool-buttons" role="radiogroup" aria-label="도구">
           {TOOLS.map((t) => {
-            const disabled = (t.id === "wall" || t.id === "verify") && !pxPerMm;
+            const disabled = readOnly
+              ? t.id !== "select"
+              : (t.id === "wall" || t.id === "verify") && !pxPerMm;
             return (
               <button
                 key={t.id}

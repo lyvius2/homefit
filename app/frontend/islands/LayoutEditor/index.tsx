@@ -1,5 +1,6 @@
 // S-06 배치 에디터 섬. props: { layout_id, version_no?, read_only? }
 import { useEffect } from "react";
+import { MOBILE_QUERY, useMediaQuery } from "~/lib/useMediaQuery";
 import { Inspector, LeftPanel, SaveBar } from "./Panels";
 import Scene from "./Scene";
 import { useLayoutEditor } from "./store";
@@ -17,6 +18,7 @@ export default function LayoutEditor(props: Props) {
       ? null
       : Number(props.version_no);
   const readOnly = props.read_only === true || props.read_only === "true";
+  const mobile = useMediaQuery(MOBILE_QUERY);
 
   const load = useLayoutEditor((s) => s.load);
   const loading = useLayoutEditor((s) => s.loading);
@@ -32,8 +34,9 @@ export default function LayoutEditor(props: Props) {
   const selectedKey = useLayoutEditor((s) => s.selectedKey);
 
   useEffect(() => {
-    if (Number.isFinite(layoutId)) void load(layoutId, versionNo, readOnly);
-  }, [layoutId, versionNo, readOnly, load]);
+    if (Number.isFinite(layoutId))
+      void load(layoutId, versionNo, readOnly, mobile);
+  }, [layoutId, versionNo, readOnly, mobile, load]);
 
   // 키보드: 방향키 10/100 mm, R 회전, Delete 제거
   useEffect(() => {

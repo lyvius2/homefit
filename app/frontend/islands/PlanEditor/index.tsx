@@ -1,5 +1,6 @@
 // S-03 도면 에디터 섬. props: { house_id }
 import { useEffect } from "react";
+import { MOBILE_QUERY, useMediaQuery } from "~/lib/useMediaQuery";
 import Canvas from "./Canvas";
 import Sidebar from "./Sidebar";
 import { usePlanEditor } from "./store";
@@ -10,6 +11,7 @@ interface Props {
 
 export default function PlanEditor(props: Props) {
   const houseId = Number(props.house_id);
+  const mobile = useMediaQuery(MOBILE_QUERY);
   const load = usePlanEditor((s) => s.load);
   const loading = usePlanEditor((s) => s.loading);
   const loadError = usePlanEditor((s) => s.loadError);
@@ -21,8 +23,8 @@ export default function PlanEditor(props: Props) {
   const cancelPending = usePlanEditor((s) => s.cancelPending);
 
   useEffect(() => {
-    if (Number.isFinite(houseId)) void load(houseId);
-  }, [houseId, load]);
+    if (Number.isFinite(houseId)) void load(houseId, mobile);
+  }, [houseId, mobile, load]);
 
   // 키보드: Delete/Backspace 선택 벽 삭제, Esc 그리기 끊기
   useEffect(() => {
@@ -67,6 +69,11 @@ export default function PlanEditor(props: Props) {
     <div className="editor">
       <Sidebar />
       <div className="editor__main">
+        {mobile && (
+          <p className="banner banner--info" role="status">
+            모바일에서는 보기 전용입니다. 편집은 1024 px 이상 화면에서 하세요.
+          </p>
+        )}
         {violations.length > 0 && (
           <div className="banner banner--error" role="alert">
             <strong>저장할 수 없습니다.</strong>

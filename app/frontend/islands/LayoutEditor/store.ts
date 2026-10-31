@@ -58,6 +58,8 @@ export interface LayoutEditorState {
   notice: string | null;
   /** 아카이브에서 과거 버전을 볼 때 true. "이 버전에서 이어서 편집" 으로 해제 */
   readOnly: boolean;
+  /** 모바일(< 1024 px) 보기 전용. 해제 불가 */
+  viewOnly: boolean;
   dragging: boolean;
   camera: { mode: CameraMode; seq: number };
   query: string;
@@ -67,6 +69,7 @@ export interface LayoutEditorState {
     layoutId: number,
     versionNo?: number | null,
     readOnly?: boolean,
+    viewOnly?: boolean,
   ) => Promise<void>;
   switchVersion: (versionNo: number) => Promise<void>;
   startEditingFromCurrent: () => void;
@@ -221,12 +224,13 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
   saving: false,
   notice: null,
   readOnly: false,
+  viewOnly: false,
   dragging: false,
   camera: { mode: "iso", seq: 0 },
   query: "",
   kindFilter: null,
 
-  async load(layoutId, versionNo = null, readOnly = false) {
+  async load(layoutId, versionNo = null, readOnly = false, viewOnly = false) {
     set({ layoutId, loading: true, loadError: null });
     try {
       const { layout, latest_version_no } = await api.getLayout(layoutId);
@@ -252,7 +256,8 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
         violations: computeViolations(planPayload.plan, working),
         serverViolations: [],
         memo: "",
-        readOnly: readOnly && version !== null,
+        readOnly: viewOnly || (readOnly && version !== null),
+        viewOnly,
         loading: false,
         camera: { mode: "fit", seq: get().camera.seq + 1 },
       });
@@ -292,7 +297,8 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
   },
 
   startEditingFromCurrent() {
-    const { baseVersionNo } = get();
+    const { baseVersionNo, viewOnly } = get();
+    if (viewOnly) return;
     set({
       readOnly: false,
       dirty: true,

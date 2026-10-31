@@ -48,9 +48,10 @@ house = House.find_or_create_by!(name: "(예시) 59㎡형 주택") do |h|
   h.ceiling_height_mm = 2300
   h.dimension_basis = "centerline"
   h.plan = SAMPLE_PLAN
-  # plan_status 는 Plans::Validate(M3) 결과로만 valid 가 된다. 시드는 draft 로 둔다.
   h.notes = "분양 평면도 기준 예시. 실측 후 벽을 보정할 것."
 end
+# plan_status 는 Plans::Validate 결과로만 바꾼다 (설계서 Section 2.2)
+house.update!(plan_status: Plans::Validate.call(house.plan).valid? ? "valid" : "draft")
 
 # --- 예시 집기 6개 (실제 제품 치수 근사치, W×D×H mm) ---
 FIXTURES = [

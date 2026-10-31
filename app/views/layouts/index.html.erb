@@ -20,7 +20,10 @@
               <td><%= link_to layout.name, layout_path(layout) %></td>
               <td class="mono"><%= layout.latest_version_no ? "v#{layout.latest_version_no}" : "—" %></td>
               <td class="mono small"><%= layout.latest_saved_at ? l(layout.latest_saved_at.in_time_zone, format: :short) : "—" %></td>
-              <td class="table__actions"><%= link_to "설정", edit_layout_path(layout), class: "btn btn--small btn--ghost" %></td>
+              <td class="table__actions">
+                <%= link_to "버전 기록", layout_versions_path(layout), class: "btn btn--small btn--ghost" %>
+                <%= link_to "설정", edit_layout_path(layout), class: "btn btn--small btn--ghost" %>
+              </td>
             </tr>
           <% end %>
         </tbody>

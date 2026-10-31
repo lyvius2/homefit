@@ -44,8 +44,10 @@ export interface PlanEditorState {
   saving: boolean;
   violations: PlanViolation[];
   notice: string | null;
+  /** 모바일(< 1024 px) 보기 전용 */
+  readOnly: boolean;
 
-  load: (houseId: number) => Promise<void>;
+  load: (houseId: number, readOnly?: boolean) => Promise<void>;
   setTool: (tool: Tool) => void;
   setThickness: (mm: number) => void;
   toggleRightAngle: () => void;
@@ -95,9 +97,10 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   saving: false,
   violations: [],
   notice: null,
+  readOnly: false,
 
-  async load(houseId) {
-    set({ houseId, loading: true, loadError: null });
+  async load(houseId, readOnly = false) {
+    set({ houseId, loading: true, loadError: null, readOnly });
     try {
       const payload = await api.getPlan(houseId);
       const needsScale =
@@ -107,7 +110,7 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
         plan: payload.plan,
         floorPlanUrl: payload.floor_plan_url,
         loading: false,
-        tool: needsScale ? "scale" : "wall",
+        tool: readOnly ? "select" : needsScale ? "scale" : "wall",
         dirty: false,
         violations: [],
       });
@@ -146,7 +149,7 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
 
   deleteSelected() {
     const id = get().selectedWallId;
-    if (!id) return;
+    if (!id || get().readOnly) return;
     set((s) => ({
       ...updatePlan(s, (plan) => ({
         ...plan,
@@ -159,7 +162,7 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
 
   setSelectedThickness(mm) {
     const id = get().selectedWallId;
-    if (!id) return;
+    if (!id || get().readOnly) return;
     const thickness = Math.max(1, Math.round(mm));
     set((s) =>
       updatePlan(s, (plan) => ({
@@ -174,7 +177,7 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   canvasClick(worldPx) {
     const state = get();
     const plan = state.plan;
-    if (!plan) return;
+    if (!plan || state.readOnly) return;
 
     switch (state.tool) {
       case "scale": {
@@ -274,6 +277,7 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   },
 
   clearScale() {
+    if (get().readOnly) return;
     set((s) => ({
       ...updatePlan(s, (p) => ({
         ...p,
@@ -286,8 +290,8 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   },
 
   async save() {
-    const { houseId, plan } = get();
-    if (!houseId || !plan) return false;
+    const { houseId, plan, readOnly } = get();
+    if (!houseId || !plan || readOnly) return false;
     set({ saving: true, violations: [], notice: null });
     try {
       const result = await api.savePlan(houseId, plan);

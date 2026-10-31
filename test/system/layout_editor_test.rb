@@ -41,3 +41,24 @@ class LayoutEditorTest < ApplicationSystemTestCase
     assert_text "배치된 집기 1개"
   end
 end
+
+class VersionArchiveTest < ApplicationSystemTestCase
+  test "open an old version read-only from the archive and continue editing from it" do
+    layout = layouts(:main)
+    sign_in_through_browser users(:one)
+    visit layout_versions_path(layout)
+
+    assert_selector "tbody tr", count: 2
+    within("tbody tr", text: "v1") { click_link "열기" }
+
+    assert_selector "h1 .badge", text: "v1 읽기 전용"
+    assert_text "읽기 전용으로 보는 중입니다."
+    assert_text "배치된 집기 1개"
+    assert_selector "button[aria-label='(예시) 소파 추가'][disabled]"
+
+    click_button "이 버전에서 이어서 편집"
+    assert_text "작업본으로 복사했습니다"
+    click_button "(예시) 소파 추가"
+    assert_text "배치된 집기 2개"
+  end
+end

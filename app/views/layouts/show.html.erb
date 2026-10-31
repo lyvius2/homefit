@@ -1,13 +1,15 @@
 <% content_for :title, @layout.name %>
 <% content_for :page_class, "page--wide" %>
+<% version_no = params[:version].presence&.to_i %>
 <div class="page-head">
-  <h1><%= @layout.name %></h1>
+  <h1><%= @layout.name %><% if version_no %> <span class="badge">v<%= version_no %> 읽기 전용</span><% end %></h1>
   <div class="page-head__actions">
     <%= link_to @layout.house.name, house_path(@layout.house), class: "btn btn--ghost" %>
+    <%= link_to "버전 기록", layout_versions_path(@layout), class: "btn" %>
     <%= link_to "설정", edit_layout_path(@layout), class: "btn" %>
   </div>
 </div>
-<%# React 섬. 레지스트리에 LayoutEditor 가 등록되면(M5) 아래 안내 대신 에디터가 마운트된다. %>
-<div class="island" data-island="LayoutEditor" data-props="<%= { layout_id: @layout.id }.to_json %>">
+<%# React 섬 (S-06). version 파라미터가 있으면 그 버전을 읽기 전용으로 연다 (S-07). %>
+<div class="island" data-island="LayoutEditor" data-props="<%= { layout_id: @layout.id, version_no: version_no, read_only: version_no.present? }.to_json %>">
   <p class="island__placeholder">배치 에디터를 불러오는 중…</p>
 </div>

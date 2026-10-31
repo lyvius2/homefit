@@ -287,6 +287,7 @@ export function SaveBar() {
   const working = useLayoutEditor((s) => s.working);
   const baseVersionNo = useLayoutEditor((s) => s.baseVersionNo);
   const startEditing = useLayoutEditor((s) => s.startEditingFromCurrent);
+  const viewOnly = useLayoutEditor((s) => s.viewOnly);
 
   const collisions = violations.length;
   return (
@@ -300,7 +301,9 @@ export function SaveBar() {
         <span className="badge badge--valid">이상 없음</span>
       )}
       {dirty && <span className="badge">미저장</span>}
-      {readOnly ? (
+      {viewOnly ? (
+        <span className="small muted">보기 전용</span>
+      ) : readOnly ? (
         <button
           type="button"
           className="btn btn--primary"

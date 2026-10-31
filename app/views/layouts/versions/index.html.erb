@@ -1,0 +1,37 @@
+<% content_for :title, "버전 기록 · #{@layout.name}" %>
+<div class="page-head">
+  <h1>버전 기록 — <%= @layout.name %></h1>
+  <div class="page-head__actions">
+    <%= link_to @layout.house.name, house_path(@layout.house), class: "btn btn--ghost" %>
+    <%= link_to "에디터로", layout_path(@layout), class: "btn btn--primary" %>
+  </div>
+</div>
+
+<% if @versions.empty? %>
+  <p class="empty">아직 저장된 버전이 없습니다. 에디터에서 "새 버전으로 저장"을 누르면 여기에 쌓입니다.</p>
+<% else %>
+  <section class="panel">
+    <p class="small muted">버전은 불변입니다. 행을 누르면 그 버전을 읽기 전용으로 열고, "이 버전에서 이어서 편집"으로 작업본에 복사할 수 있습니다.</p>
+    <table class="table table--rows">
+      <thead>
+        <tr><th>버전</th><th>저장 시각</th><th>메모</th><th>집기 수</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @versions.each do |version| %>
+          <tr>
+            <td class="mono">
+              <%= link_to "v#{version.version_no}", layout_path(@layout, version: version.version_no) %>
+              <% if version.version_no == @layout.latest_version_no %>
+                <span class="badge badge--valid">최신</span>
+              <% end %>
+            </td>
+            <td class="mono small"><%= l(version.created_at.in_time_zone, format: :long) %></td>
+            <td><%= version.memo.presence || "—" %></td>
+            <td class="mono"><%= version.placements_count %>개</td>
+            <td class="table__actions"><%= link_to "열기", layout_path(@layout, version: version.version_no), class: "btn btn--small" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
