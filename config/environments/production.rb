@@ -43,6 +43,13 @@ Rails.application.configure do
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
 
+  # lograge: 요청당 1줄 JSON 로그 (설계서 Section 6). production 에서만 켠다.
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Json.new
+  config.lograge.custom_options = lambda do |event|
+    { time: Time.current.utc.iso8601(3), request_id: event.payload[:request]&.request_id }
+  end
+
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
