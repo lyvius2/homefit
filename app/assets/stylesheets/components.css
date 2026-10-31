@@ -474,14 +474,3 @@
   color: var(--color-muted);
   text-align: center;
 }
-
-/* --- 섬(에디터) 자리 --- */
-.island-placeholder {
-  min-height: 320px;
-  display: grid;
-  place-items: center;
-  border: 1px dashed var(--color-line);
-  border-radius: var(--radius);
-  color: var(--color-muted);
-  background: var(--color-surface);
-}
