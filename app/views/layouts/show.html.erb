@@ -1,4 +1,5 @@
 <% content_for :title, @layout.name %>
+<% content_for :page_class, "page--wide" %>
 <div class="page-head">
   <h1><%= @layout.name %></h1>
   <div class="page-head__actions">
@@ -8,5 +9,5 @@
 </div>
 <%# React 섬. 레지스트리에 LayoutEditor 가 등록되면(M5) 아래 안내 대신 에디터가 마운트된다. %>
 <div class="island" data-island="LayoutEditor" data-props="<%= { layout_id: @layout.id }.to_json %>">
-  <p class="island__placeholder">배치 에디터는 M5에서 제공됩니다.</p>
+  <p class="island__placeholder">배치 에디터를 불러오는 중…</p>
 </div>

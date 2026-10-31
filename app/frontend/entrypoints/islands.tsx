@@ -10,7 +10,7 @@ type IslandLoader = () => Promise<{ default: ComponentType<IslandProps> }>;
 // 컴포넌트는 지연 로드한다. 에디터 번들을 관리 화면에서 내려받지 않기 위함.
 const registry: Record<string, IslandLoader> = {
   PlanEditor: () => import("~/islands/PlanEditor"),
-  // LayoutEditor: () => import("~/islands/LayoutEditor"), // M5
+  LayoutEditor: () => import("~/islands/LayoutEditor"),
 };
 
 const roots = new Map<Element, Root>();

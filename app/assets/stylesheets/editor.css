@@ -174,3 +174,145 @@
     height: 60vh;
   }
 }
+
+/* --- 배치 에디터 (S-06) --- */
+.editor--layout {
+  grid-template-columns: 320px minmax(0, 1fr);
+}
+
+.editor__stage--3d {
+  cursor: default;
+}
+
+.editor__stage--3d canvas {
+  display: block;
+  outline: none;
+}
+
+.camera-buttons {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+}
+
+.inspector {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.inspector__title {
+  font-weight: 700;
+  margin: 0;
+}
+
+.inspector .field input {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.inspector .field span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.savebar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+}
+
+.savebar__memo {
+  flex: 1;
+  min-width: 160px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  border-radius: 8px;
+}
+
+.list__item--selected {
+  background: #eff6ff;
+}
+
+.list__select {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.list__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgb(0 0 0 / 10%);
+  flex: none;
+}
+
+.list__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.list__title {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list__meta {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.badge--danger {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
