@@ -1,2 +1,9 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+# Rails 와 Vite dev 서버를 Procfile.dev 로 함께 띄운다.
+# Rails jsbundling 의 bin/dev 와 같은 방식으로, foreman 이 없으면 전역 gem 으로 설치한다.
+unless system("gem list foreman -i --silent")
+  puts "Installing foreman..."
+  system("gem install foreman", exception: true)
+end
+
+exec "foreman", "start", "-f", "Procfile.dev", *ARGV
