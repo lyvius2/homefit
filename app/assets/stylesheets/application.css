@@ -1,10 +1,5 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * HomeFit 관리 화면 공용 스타일. Propshaft 가 app/assets/stylesheets 의 모든 CSS 를 묶는다.
+ * 구성: base.css(변수·리셋·타이포), components.css(네비·카드·폼·버튼·배지·표).
+ * 에디터(S-03, S-06)는 React 섬 안에서 자체 스타일을 가진다.
  */

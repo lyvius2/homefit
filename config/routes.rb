@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   resource :session
   resources :houses, only: [ :index ]
+  resources :fixtures, only: [ :index ]
+  resources :layouts, only: [ :index ]
   root "houses#index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

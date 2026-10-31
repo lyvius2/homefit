@@ -1,0 +1,7 @@
+<% content_for :title, "배치도" %>
+<div class="page-head"><h1>배치도</h1></div>
+<ul class="cards">
+  <% @layouts.each do |layout| %>
+    <li class="card"><div class="card__body"><p class="card__title"><%= layout.name %></p><p class="muted small"><%= layout.house.name %></p></div></li>
+  <% end %>
+</ul>

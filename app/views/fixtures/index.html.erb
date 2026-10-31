@@ -1,0 +1,7 @@
+<% content_for :title, "집기" %>
+<div class="page-head"><h1>집기</h1></div>
+<ul class="cards">
+  <% @fixtures.each do |fixture| %>
+    <li class="card"><div class="card__body"><p class="card__title"><%= fixture.name %></p></div></li>
+  <% end %>
+</ul>
