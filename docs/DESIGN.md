@@ -254,13 +254,15 @@ SVG는 거부한다(스크립트 삽입 위험).
 ### 4.1 HTML 라우트
 
 ```ruby
+resource :session                                                 # 로그인/로그아웃 (M2)
 resources :houses do
   resource :plan, only: [:edit], controller: "houses/plans"       # 도면 에디터 (React 섬)
+  resource :floor_plan, only: [:create, :destroy], controller: "houses/floor_plans"  # HTML 도면 업로드/삭제 (ADR 0002)
   resources :layouts, only: [:new, :create], shallow: true
 end
 resources :fixtures
-resources :layouts, only: [:show, :edit, :update, :destroy] do   # show = 배치 에디터 (React 섬)
-  resources :versions, only: [:index], controller: "layouts/versions"   # 버전 아카이브
+resources :layouts, only: [:index, :show, :edit, :update, :destroy] do   # index = 전체 목록 (ADR 0002), show = 배치 에디터 (React 섬)
+  resources :versions, only: [:index], controller: "layouts/versions"   # 버전 아카이브 (M6)
 end
 root "houses#index"
 ```
@@ -333,7 +335,7 @@ violations: Violation[]     // 클라이언트 판정 결과, 60fps 아닌 point
 
 ## 6. 비기능
 
-- **인증**: 2인 사용. Rails 8 `bin/rails generate authentication` 기반 세션 로그인, 회원가입 없음(시드로 계정 생성). M2에 포함.
+- **인증**: 2인 사용. Rails 8 `bin/rails generate authentication` 기반 세션 로그인, 회원가입 없음(`.env`의 `HOMEFIT_SEED_USERS`를 시드가 읽어 계정 생성). 이메일 비밀번호 재설정은 두지 않고 콘솔에서 변경한다(ADR 0002). M2에 포함.
 - **파일 저장**: 개발·초기 운영은 Active Storage Disk 서비스(Mac mini 로컬). 백업은 `storage/` 디렉터리 + `mysqldump`.
 - **로그**: `lograge` JSON 로그. `/up` 헬스체크(Rails 기본).
 - **메트릭**: 선택. 필요해지면 `yabeda-rails` + `yabeda-prometheus`로 기존 Grafana 스택에 연결.

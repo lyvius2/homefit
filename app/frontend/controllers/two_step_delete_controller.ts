@@ -20,6 +20,8 @@ export default class extends Controller<HTMLFormElement> {
 
   override connect(): void {
     this.originalLabel = this.buttonTarget.textContent ?? "";
+    // 연결됐음을 표시한다. 시스템 테스트가 JS 준비를 기다리는 데 쓴다.
+    this.buttonTarget.dataset.armed = "false";
   }
 
   override disconnect(): void {
@@ -33,6 +35,7 @@ export default class extends Controller<HTMLFormElement> {
     this.armed = true;
     this.buttonTarget.textContent = this.confirmLabelValue;
     this.buttonTarget.classList.add("btn--armed");
+    this.buttonTarget.dataset.armed = "true";
     this.timer = window.setTimeout(() => this.reset(), this.timeoutValue);
   }
 
@@ -41,5 +44,6 @@ export default class extends Controller<HTMLFormElement> {
     this.armed = false;
     this.buttonTarget.textContent = this.originalLabel;
     this.buttonTarget.classList.remove("btn--armed");
+    this.buttonTarget.dataset.armed = "false";
   }
 }
