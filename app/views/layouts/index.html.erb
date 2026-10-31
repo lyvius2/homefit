@@ -1,7 +1,30 @@
 <% content_for :title, "배치도" %>
 <div class="page-head"><h1>배치도</h1></div>
-<ul class="cards">
-  <% @layouts.each do |layout| %>
-    <li class="card"><div class="card__body"><p class="card__title"><%= layout.name %></p><p class="muted small"><%= layout.house.name %></p></div></li>
+
+<% if @layouts.empty? %>
+  <p class="empty">배치도가 없습니다. 주택 상세에서 "새 배치도"로 만듭니다.</p>
+<% else %>
+  <% @by_house.each do |house, layouts| %>
+    <section class="panel">
+      <div class="panel__head">
+        <h2><%= link_to house.name, house_path(house) %></h2>
+        <%= link_to "새 배치도", new_house_layout_path(house), class: "btn btn--small" %>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>이름</th><th>최신 버전</th><th>저장 시각</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% layouts.each do |layout| %>
+            <tr>
+              <td><%= link_to layout.name, layout_path(layout) %></td>
+              <td class="mono"><%= layout.latest_version_no ? "v#{layout.latest_version_no}" : "—" %></td>
+              <td class="mono small"><%= layout.latest_saved_at ? l(layout.latest_saved_at.in_time_zone, format: :short) : "—" %></td>
+              <td class="table__actions"><%= link_to "설정", edit_layout_path(layout), class: "btn btn--small btn--ghost" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
   <% end %>
-</ul>
+<% end %>

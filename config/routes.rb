@@ -7,7 +7,7 @@ Rails.application.routes.draw do
     resources :layouts, only: [ :new, :create ], shallow: true
   end
   resources :fixtures
-  resources :layouts, only: [ :index, :show ]
+  resources :layouts, only: [ :index, :show, :edit, :update, :destroy ]   # index 는 네비용 추가 (ADR 0002)
 
   root "houses#index"
 

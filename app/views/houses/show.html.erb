@@ -30,11 +30,10 @@
           </thead>
           <tbody>
             <% @layouts.each do |layout| %>
-              <% latest = layout.layout_versions.max_by(&:version_no) %>
               <tr>
                 <td><%= link_to layout.name, layout_path(layout) %></td>
-                <td class="mono"><%= latest ? "v#{latest.version_no}" : "—" %></td>
-                <td class="mono small"><%= latest ? l(latest.created_at, format: :short) : "—" %></td>
+                <td class="mono"><%= layout.latest_version_no ? "v#{layout.latest_version_no}" : "—" %></td>
+                <td class="mono small"><%= layout.latest_saved_at ? l(layout.latest_saved_at.in_time_zone, format: :short) : "—" %></td>
               </tr>
             <% end %>
           </tbody>

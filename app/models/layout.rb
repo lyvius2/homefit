@@ -8,6 +8,15 @@ class Layout < ApplicationRecord
 
   validates :name, presence: true, length: { maximum: 100 }
 
+  # 목록용: 버전을 전부 읽지 않고 최신 버전 번호·저장 시각만 서브쿼리로 붙인다 (latest_version_no, latest_saved_at).
+  scope :with_latest_version, -> {
+    select(
+      "layouts.*",
+      "(SELECT MAX(v.version_no) FROM layout_versions v WHERE v.layout_id = layouts.id) AS latest_version_no",
+      "(SELECT MAX(v.created_at) FROM layout_versions v WHERE v.layout_id = layouts.id) AS latest_saved_at"
+    )
+  }
+
   def latest_version
     layout_versions.order(version_no: :desc).first
   end

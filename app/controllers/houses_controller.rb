@@ -7,7 +7,7 @@ class HousesController < ApplicationController
   end
 
   def show
-    @layouts = @house.layouts.includes(:layout_versions).order(:name)
+    @layouts = @house.layouts.with_latest_version.order(:name)
   end
 
   def new
@@ -32,7 +32,7 @@ class HousesController < ApplicationController
     if @house.update(house_params)
       redirect_to @house, notice: "저장했습니다."
     else
-      @layouts = @house.layouts.includes(:layout_versions).order(:name)
+      @layouts = @house.layouts.with_latest_version.order(:name)
       render :show, status: :unprocessable_entity
     end
   end
