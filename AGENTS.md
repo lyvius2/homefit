@@ -14,7 +14,7 @@
 | DB | MySQL 8.0, utf8mb4 | 개발 DB `homefit_development`, 테스트 `homefit_test` |
 | 프론트 빌드 | vite_rails | importmap 사용 안 함 |
 | 관리 화면 | ERB + Turbo + Stimulus (npm `@hotwired/turbo-rails`, `@hotwired/stimulus`) | |
-| 에디터 2종 | React 18 + TypeScript(strict) | `app/frontend/islands/PlanEditor`, `app/frontend/islands/LayoutEditor` |
+| 에디터 2종 | React 19 + TypeScript(strict) | `app/frontend/islands/PlanEditor`, `app/frontend/islands/LayoutEditor` |
 | 3D | three + @react-three/fiber + @react-three/drei | |
 | 2D 캔버스 | konva + react-konva | |
 | 파일 | Active Storage (Disk) + image_processing(libvips) | |

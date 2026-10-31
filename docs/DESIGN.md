@@ -2,7 +2,7 @@
 
 - 문서 버전: 0.1 (2026-11-01)
 - 상태: 초안, M1 착수 기준
-- 스택: Ruby 3.4 / Rails 8.x / MySQL 8.0 / vite_rails + React 18 + TypeScript / React Three Fiber / Konva / Active Storage / Solid Queue
+- 스택: Ruby 3.4 / Rails 8.x / MySQL 8.0 / vite_rails + React 19 + TypeScript / React Three Fiber / Konva / Active Storage / Solid Queue
 
 ---
 

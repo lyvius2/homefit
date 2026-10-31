@@ -9,7 +9,7 @@
 | 영역 | 선택 |
 |---|---|
 | 백엔드 | Ruby 3.4, Rails 8, MySQL 8.0 (utf8mb4, 외부 서버) |
-| 프론트 | vite_rails, React 18 + TypeScript(strict), Turbo/Stimulus |
+| 프론트 | vite_rails, React 19 + TypeScript(strict), Turbo/Stimulus |
 | 3D / 2D | three + @react-three/fiber + @react-three/drei, konva + react-konva |
 | 파일 / 잡 | Active Storage(Disk) + libvips, Solid Queue |
 | 테스트 / 분석 | Minitest, vitest, rubocop, brakeman, erb_lint, eslint, prettier, tsc |
