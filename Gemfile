@@ -55,3 +55,5 @@ group :test do
 end
 
 gem "vite_rails", "~> 3.11"
+
+gem "json_schemer", "~> 2.5"

@@ -71,3 +71,20 @@ class HouseTest < ActiveSupport::TestCase
     assert_empty Placement.where(layout_version_id: version_ids)
   end
 end
+
+class HousePlanSchemaTest < ActiveSupport::TestCase
+  test "plan must match the v1 schema" do
+    house = House.new(name: "스키마", plan: { "schema" => 1 })
+
+    assert_not house.valid?
+    assert_match %r{/: object at root is missing required properties}, house.errors[:plan].first
+  end
+
+  test "plan with a valid wall saves and reloads with integer coordinates" do
+    house = House.new(name: "벽")
+    house.plan["walls"] << { "id" => "w01", "a" => [ 0, 0 ], "b" => [ 9900, 0 ], "thickness_mm" => 200 }
+    house.save!
+
+    assert_equal [ 9900, 0 ], house.reload.plan["walls"][0]["b"]
+  end
+end

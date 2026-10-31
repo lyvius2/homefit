@@ -24,4 +24,15 @@ class House < ApplicationRecord
   validates :name, presence: true, length: { maximum: 100 }
   validates :ceiling_height_mm, numericality: { only_integer: true, in: 2000..4000 }
   validates :plan, presence: true
+  validate :plan_matches_schema
+
+  private
+
+  def plan_matches_schema
+    return if plan.blank?
+
+    Plans::Schema.call(plan).errors.each do |error|
+      errors.add(:plan, "#{error[:path].presence || '/'}: #{error[:message]}")
+    end
+  end
 end

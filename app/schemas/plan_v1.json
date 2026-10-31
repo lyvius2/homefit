@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://homefit.local/schemas/plan_v1.json",
+  "title": "HomeFit Plan v1",
+  "description": "주택의 파라메트릭 도면. 모든 길이는 정수 mm, 원점은 도면 좌상단, y 는 아래가 +. (설계서 Section 2.3)",
+  "type": "object",
+  "required": ["schema", "unit", "image", "scale", "walls", "openings"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": 1 },
+    "unit": { "const": "mm" },
+    "image": {
+      "description": "도면 이미지 크기(px). 도면 없이 그린 경우 null",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/image" }]
+    },
+    "scale": { "$ref": "#/$defs/scale" },
+    "walls": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/wall" }
+    },
+    "openings": {
+      "description": "문·창 개구부. v1 에서는 빈 배열 허용",
+      "type": "array",
+      "items": { "$ref": "#/$defs/opening" }
+    }
+  },
+  "$defs": {
+    "mm": { "type": "integer" },
+    "positive_mm": { "type": "integer", "minimum": 1 },
+    "point": {
+      "description": "[x_mm, y_mm]",
+      "type": "array",
+      "items": { "$ref": "#/$defs/mm" },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "image": {
+      "type": "object",
+      "required": ["width_px", "height_px"],
+      "additionalProperties": false,
+      "properties": {
+        "width_px": { "type": "integer", "minimum": 1 },
+        "height_px": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "scale": {
+      "type": "object",
+      "required": ["px_per_mm", "measured_mm", "verify"],
+      "additionalProperties": false,
+      "properties": {
+        "px_per_mm": {
+          "description": "도면 없으면 null",
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0
+        },
+        "measured_mm": {
+          "description": "축척 설정에 쓴 치수",
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "verify": {
+          "description": "검증 측정. 없으면 null",
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/verify" }]
+        }
+      }
+    },
+    "verify": {
+      "type": "object",
+      "required": ["measured_mm", "got_mm", "error_pct"],
+      "additionalProperties": false,
+      "properties": {
+        "measured_mm": { "$ref": "#/$defs/positive_mm" },
+        "got_mm": { "type": "integer", "minimum": 0 },
+        "error_pct": { "type": "number", "minimum": 0 }
+      }
+    },
+    "wall": {
+      "type": "object",
+      "required": ["id", "a", "b", "thickness_mm"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "a": { "$ref": "#/$defs/point" },
+        "b": { "$ref": "#/$defs/point" },
+        "thickness_mm": { "$ref": "#/$defs/positive_mm" }
+      }
+    },
+    "opening": {
+      "type": "object",
+      "required": ["id", "wall_id", "offset_mm", "width_mm", "height_mm", "sill_mm", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "wall_id": { "type": "string", "minLength": 1 },
+        "offset_mm": { "type": "integer", "minimum": 0 },
+        "width_mm": { "$ref": "#/$defs/positive_mm" },
+        "height_mm": { "$ref": "#/$defs/positive_mm" },
+        "sill_mm": { "type": "integer", "minimum": 0 },
+        "type": { "enum": ["door", "window"] }
+      }
+    }
+  }
+}
