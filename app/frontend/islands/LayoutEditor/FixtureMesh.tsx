@@ -1,4 +1,5 @@
-// 집기 1개: BoxGeometry + 6면 머티리얼(정면 +z 에 텍스처). 바닥 평면 위 드래그(10 mm 스냅), 선택 강조, 충돌 빨강.
+// 집기 1개: BoxGeometry + 6면 머티리얼(옆면 4면에 텍스처, 윗면·바닥은 색). 이름 라벨은 FixtureLabels.tsx.
+// 바닥 평면 위 드래그(10 mm 스냅), 선택 강조, 충돌 빨강.
 import type { ThreeEvent } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { BoxGeometry, EdgesGeometry, Plane, Vector3 } from "three";
@@ -87,7 +88,14 @@ export default function FixtureMesh({ placement, selected, violated }: Props) {
   const color = violated ? VIOLATED : placement.color;
   const emissive = selected ? SELECTED : violated ? VIOLATED : "#000000";
   const emissiveIntensity = selected ? 0.35 : violated ? 0.2 : 0;
-  const side = { color, emissive, emissiveIntensity };
+  // 윗면(+y)·바닥(−y): 항상 색. 옆면 4면: 이미지가 있으면 흰 바탕에 텍스처, 충돌이면 빨갛게 물들인다 (ADR 0004)
+  const cap = { color, emissive, emissiveIntensity };
+  const side = {
+    color: texture && !violated ? "#ffffff" : color,
+    map: texture ?? null,
+    emissive,
+    emissiveIntensity,
+  };
 
   return (
     <group
@@ -103,18 +111,12 @@ export default function FixtureMesh({ placement, selected, violated }: Props) {
         userData={{ placementKey: placement.key }}
       >
         <boxGeometry args={[w, h, d]} />
+        {/* BoxGeometry 면 순서: 0 +x, 1 −x, 2 +y(윗면), 3 −y(바닥), 4 +z(정면), 5 −z */}
         <meshStandardMaterial attach="material-0" {...side} />
         <meshStandardMaterial attach="material-1" {...side} />
-        <meshStandardMaterial attach="material-2" {...side} />
-        <meshStandardMaterial attach="material-3" {...side} />
-        {/* +z = 정면: 텍스처가 있으면 흰 바탕에 이미지 */}
-        <meshStandardMaterial
-          attach="material-4"
-          color={texture && !violated ? "#ffffff" : color}
-          map={texture ?? null}
-          emissive={emissive}
-          emissiveIntensity={emissiveIntensity}
-        />
+        <meshStandardMaterial attach="material-2" {...cap} />
+        <meshStandardMaterial attach="material-3" {...cap} />
+        <meshStandardMaterial attach="material-4" {...side} />
         <meshStandardMaterial attach="material-5" {...side} />
       </mesh>
       {clearanceEdges && (

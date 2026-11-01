@@ -91,7 +91,7 @@ bin/rails console
 - `strict: true`, `any` 금지(불가피하면 `unknown` + 좁히기). ESLint 규칙 끄기 전에 승인.
 - 함수 컴포넌트 + 훅. 상태는 에디터별 단일 스토어(zustand 사용 승인됨). 전역 상태 라이브러리 추가 금지.
 - 도메인 타입은 `app/frontend/types/domain.ts` 한 곳. 서버 JSON과 필드명을 **그대로**(snake_case) 쓰고 변환 레이어를 두지 않는다.
-- R3F: 집기 메시는 `BoxGeometry` + 6면 머티리얼(정면 `+z`에 텍스처). 지오메트리·텍스처는 useMemo/캐시로 재사용.
+- R3F: 집기 메시는 `BoxGeometry` + 6면 머티리얼(옆면 4면 `+x −x +z −z`에 텍스처, 윗면·바닥은 색) + 이름 라벨은 DOM 오버레이(`FixtureLabels.tsx`, drei `Html` 은 React 19 경합으로 쓰지 않음, ADR 0004). 지오메트리·텍스처는 useMemo/캐시로 재사용.
 - 캔버스 조작 이벤트는 `pointer*` 이벤트만 사용(mouse/touch 분기 금지).
 
 ### 공통

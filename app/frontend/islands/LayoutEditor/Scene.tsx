@@ -1,10 +1,15 @@
-// R3F 뷰: 바닥·벽(압출)·100 mm 격자·집기 박스. 카메라 버튼(위에서/입체/전체)은 스토어의 camera 요청을 따른다.
+// R3F 뷰: 바닥·벽(압출)·100 mm 격자·집기 박스·이름 라벨. 카메라 버튼(위에서/입체/전체)은 스토어의 camera 요청을 따른다.
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { boundsOfWalls } from "~/lib/collisions";
 import { mmToUnit, planToScene } from "~/lib/coords";
 import type { Wall } from "~/types/domain";
+import {
+  FixtureLabelOverlay,
+  FixtureLabelProjector,
+  type LabelElements,
+} from "./FixtureLabels";
 import FixtureMesh from "./FixtureMesh";
 import { useLayoutEditor, violationsByIndex } from "./store";
 
@@ -40,62 +45,72 @@ export default function Scene() {
   const select = useLayoutEditor((s) => s.select);
   const byIndex = violationsByIndex(violations);
   const gridSize = Math.ceil(Math.max(frame.w, frame.d) + 6);
+  const labelElements = useRef<LabelElements>(new Map());
 
   return (
-    <Canvas
-      camera={{
-        position: [frame.cx + 6, 7, frame.cz + 9],
-        fov: 45,
-        near: 0.05,
-        far: 200,
-      }}
-      dpr={[1, 2]}
-    >
-      <color attach="background" args={["#f3f4f6"]} />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[5, 10, 4]} intensity={1.1} />
-      <directionalLight position={[-6, 6, -5]} intensity={0.4} />
-
-      {/* 바닥: 클릭하면 선택 해제 */}
-      <mesh
-        rotation-x={-Math.PI / 2}
-        position={[frame.cx, -0.002, frame.cz]}
-        onPointerDown={() => select(null)}
+    <>
+      <Canvas
+        camera={{
+          position: [frame.cx + 6, 7, frame.cz + 9],
+          fov: 45,
+          near: 0.05,
+          far: 200,
+        }}
+        dpr={[1, 2]}
       >
-        <planeGeometry args={[gridSize + 20, gridSize + 20]} />
-        <meshStandardMaterial color="#fafafa" />
-      </mesh>
-      <mesh rotation-x={-Math.PI / 2} position={[frame.cx, -0.001, frame.cz]}>
-        <planeGeometry args={[frame.w, frame.d]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh>
-      <gridHelper
-        args={[gridSize, gridSize * 10, "#d1d5db", "#e5e7eb"]}
-        position={[frame.cx, 0, frame.cz]}
-      />
+        <color attach="background" args={["#f3f4f6"]} />
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[5, 10, 4]} intensity={1.1} />
+        <directionalLight position={[-6, 6, -5]} intensity={0.4} />
 
-      {walls.map((wall) => (
-        <WallMesh key={wall.id} wall={wall} ceiling={ceiling} />
-      ))}
-
-      {working.map((placement, index) => (
-        <FixtureMesh
-          key={placement.key}
-          placement={placement}
-          selected={placement.key === selectedKey}
-          violated={byIndex.has(index)}
+        {/* 바닥: 클릭하면 선택 해제 */}
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[frame.cx, -0.002, frame.cz]}
+          onPointerDown={() => select(null)}
+        >
+          <planeGeometry args={[gridSize + 20, gridSize + 20]} />
+          <meshStandardMaterial color="#fafafa" />
+        </mesh>
+        <mesh rotation-x={-Math.PI / 2} position={[frame.cx, -0.001, frame.cz]}>
+          <planeGeometry args={[frame.w, frame.d]} />
+          <meshStandardMaterial color="#ffffff" />
+        </mesh>
+        <gridHelper
+          args={[gridSize, gridSize * 10, "#d1d5db", "#e5e7eb"]}
+          position={[frame.cx, 0, frame.cz]}
         />
-      ))}
 
-      <OrbitControls
-        makeDefault
-        enabled={!dragging}
-        enableDamping={false}
-        maxPolarAngle={Math.PI / 2 - 0.02}
-        target={[frame.cx, 0, frame.cz]}
+        {walls.map((wall) => (
+          <WallMesh key={wall.id} wall={wall} ceiling={ceiling} />
+        ))}
+
+        {working.map((placement, index) => (
+          <FixtureMesh
+            key={placement.key}
+            placement={placement}
+            selected={placement.key === selectedKey}
+            violated={byIndex.has(index)}
+          />
+        ))}
+
+        <OrbitControls
+          makeDefault
+          enabled={!dragging}
+          enableDamping={false}
+          maxPolarAngle={Math.PI / 2 - 0.02}
+          target={[frame.cx, 0, frame.cz]}
+        />
+        <CameraRig frame={frame} />
+        <FixtureLabelProjector working={working} elements={labelElements} />
+      </Canvas>
+      <FixtureLabelOverlay
+        working={working}
+        selectedKey={selectedKey}
+        violatedIndexes={byIndex}
+        elements={labelElements}
       />
-      <CameraRig frame={frame} />
-    </Canvas>
+    </>
   );
 }
 

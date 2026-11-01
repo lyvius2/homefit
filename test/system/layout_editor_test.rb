@@ -19,6 +19,7 @@ class LayoutEditorTest < ApplicationSystemTestCase
     click_button "(예시) 소파 추가"
     assert_text "배치된 집기 2개"
     assert_selector ".savebar", text: "충돌 2개"   # 기본 위치가 냉장고와 겹친다
+    assert_selector ".fixture-label--violated", text: "(예시) 소파"   # 3D 뷰의 이름 라벨
 
     # 선택된 소파를 플로팅 패널에서 옮기면 충돌이 풀린다
     within(".inspector") do
