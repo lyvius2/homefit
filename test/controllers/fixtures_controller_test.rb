@@ -27,6 +27,14 @@ class FixturesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".card", Fixture.count
   end
 
+  test "new pre-fills an unused palette color" do
+    get new_fixture_path
+    assert_response :success
+    assert_select "input[name='fixture[color]']" do |inputs|
+      assert_includes Fixture::PALETTE, inputs.first["value"]
+    end
+  end
+
   test "show redirects to edit" do
     get fixture_path(@fridge)
     assert_redirected_to edit_fixture_path(@fridge)

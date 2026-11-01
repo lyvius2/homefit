@@ -55,22 +55,25 @@ house.update!(plan_status: Plans::Validate.call(house.plan).valid? ? "valid" : "
 
 # --- 예시 집기 6개 (실제 제품 치수 근사치, W×D×H mm) ---
 FIXTURES = [
-  { name: "(예시) 냉장고", kind: "appliance", width_mm: 913, depth_mm: 740, height_mm: 1780, clearance_mm: 50, color: "#d9dde2",
+  { name: "(예시) 냉장고", kind: "appliance", width_mm: 913, depth_mm: 740, height_mm: 1780, clearance_mm: 50, color: "#3b82f6",
     notes: "4도어 양문형 870L 급" },
-  { name: "(예시) 세탁기", kind: "appliance", width_mm: 600, depth_mm: 660, height_mm: 850, clearance_mm: 30, color: "#eceff1",
+  { name: "(예시) 세탁기", kind: "appliance", width_mm: 600, depth_mm: 660, height_mm: 850, clearance_mm: 30, color: "#14b8a6",
     notes: "드럼 세탁기 21kg 급" },
-  { name: "(예시) 침대", kind: "furniture", width_mm: 1540, depth_mm: 2050, height_mm: 900, clearance_mm: 0, color: "#c9b79c",
+  { name: "(예시) 침대", kind: "furniture", width_mm: 1540, depth_mm: 2050, height_mm: 900, clearance_mm: 0, color: "#8b5cf6",
     notes: "퀸(Q) 프레임, 헤드보드 포함 높이" },
-  { name: "(예시) 소파", kind: "furniture", width_mm: 2200, depth_mm: 900, height_mm: 850, clearance_mm: 0, color: "#6b7280",
+  { name: "(예시) 소파", kind: "furniture", width_mm: 2200, depth_mm: 900, height_mm: 850, clearance_mm: 0, color: "#f59e0b",
     notes: "3인용 패브릭" },
-  { name: "(예시) 식탁", kind: "furniture", width_mm: 1400, depth_mm: 800, height_mm: 740, clearance_mm: 600, color: "#a8865f",
+  { name: "(예시) 식탁", kind: "furniture", width_mm: 1400, depth_mm: 800, height_mm: 740, clearance_mm: 600, color: "#a16207",
     notes: "4인용. clearance 는 의자 빼는 여유" },
-  { name: "(예시) TV", kind: "appliance", width_mm: 1449, depth_mm: 290, height_mm: 896, clearance_mm: 0, color: "#1f2937",
+  { name: "(예시) TV", kind: "appliance", width_mm: 1449, depth_mm: 290, height_mm: 896, clearance_mm: 0, color: "#64748b",
     notes: "65인치, 스탠드 포함 깊이·높이" }
 ].freeze
 
+# 예시 집기는 시드 소유이므로 색만은 시드 값으로 맞춘다 (팔레트 변경이 이미 시드된 DB 에도 반영되도록). 치수·메모는 건드리지 않는다.
 fixtures_by_name = FIXTURES.to_h do |attrs|
-  [ attrs[:name], Fixture.find_or_create_by!(name: attrs[:name]) { |f| f.assign_attributes(attrs) } ]
+  fixture = Fixture.find_or_create_by!(name: attrs[:name]) { |f| f.assign_attributes(attrs) }
+  fixture.update!(color: attrs[:color]) if fixture.color != attrs[:color]
+  [ attrs[:name], fixture ]
 end
 
 # --- 예시 배치도 + 버전 1 ---

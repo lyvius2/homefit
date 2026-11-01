@@ -15,7 +15,7 @@ class FixturesController < ApplicationController
   end
 
   def new
-    @fixture = Fixture.new
+    @fixture = Fixture.new(color: Fixture.next_color)
   end
 
   def create

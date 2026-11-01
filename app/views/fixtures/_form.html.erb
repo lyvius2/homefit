@@ -48,7 +48,7 @@
     <div class="field <%= "field--invalid" if fixture.errors[:color].any? %>">
       <%= form.label :color, "색" %>
       <%= form.color_field :color %>
-      <span class="field__hint">이미지가 없을 때 박스 색.</span>
+      <span class="field__hint">이미지가 없을 때 옆면 색. 윗면·바닥은 항상 이 색입니다.</span>
     </div>
   </div>
 

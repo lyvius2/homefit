@@ -13,6 +13,19 @@ class FixtureTest < ActiveSupport::TestCase
     assert_equal "#8c8f94", fixture.color
   end
 
+  test "next_color prefers a palette color no fixture uses yet" do
+    assert_equal Fixture::PALETTE.first, Fixture.next_color
+
+    Fixture.create!(valid_attributes.merge(name: "A", color: Fixture::PALETTE.first))
+    assert_equal Fixture::PALETTE.second, Fixture.next_color
+  end
+
+  test "next_color cycles by count once every palette color is in use" do
+    Fixture::PALETTE.each_with_index { |c, i| Fixture.create!(valid_attributes.merge(name: "P#{i}", color: c)) }
+
+    assert_equal Fixture::PALETTE[Fixture.count % Fixture::PALETTE.size], Fixture.next_color
+  end
+
   test "dimensions must be integers within range (R-07)" do
     fixture = Fixture.new(valid_attributes.merge(width_mm: 9, depth_mm: 10_001, height_mm: 5_001))
 
