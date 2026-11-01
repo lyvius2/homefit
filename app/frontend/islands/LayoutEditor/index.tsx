@@ -29,6 +29,7 @@ export default function LayoutEditor(props: Props) {
   const serverViolations = useLayoutEditor((s) => s.serverViolations);
   const requestCamera = useLayoutEditor((s) => s.requestCamera);
   const nudgeSelected = useLayoutEditor((s) => s.nudgeSelected);
+  const elevateSelected = useLayoutEditor((s) => s.elevateSelected);
   const rotateBy = useLayoutEditor((s) => s.rotateBy);
   const remove = useLayoutEditor((s) => s.remove);
   const selectedKey = useLayoutEditor((s) => s.selectedKey);
@@ -38,12 +39,20 @@ export default function LayoutEditor(props: Props) {
       void load(layoutId, versionNo, readOnly, mobile);
   }, [layoutId, versionNo, readOnly, mobile, load]);
 
-  // 키보드: 방향키 10/100 mm, R 회전, Delete 제거
+  // 키보드: 방향키 10/100 mm, Ctrl(⌘)+↑↓ 높이, R 회전, Delete 제거
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       const step = e.shiftKey ? 100 : 10;
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key === "ArrowUp" || e.key === "ArrowDown")
+      ) {
+        elevateSelected(e.key === "ArrowUp" ? step : -step);
+        e.preventDefault();
+        return;
+      }
       switch (e.key) {
         case "ArrowLeft":
           nudgeSelected(-step, 0);
@@ -72,7 +81,7 @@ export default function LayoutEditor(props: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [nudgeSelected, rotateBy, remove, selectedKey]);
+  }, [nudgeSelected, elevateSelected, rotateBy, remove, selectedKey]);
 
   useEffect(() => {
     if (!dirty) return;

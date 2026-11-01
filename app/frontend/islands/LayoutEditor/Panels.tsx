@@ -189,6 +189,7 @@ export function Inspector() {
   const working = useLayoutEditor((s) => s.working);
   const selectedKey = useLayoutEditor((s) => s.selectedKey);
   const setPosition = useLayoutEditor((s) => s.setPosition);
+  const setElevation = useLayoutEditor((s) => s.setElevation);
   const setRotation = useLayoutEditor((s) => s.setRotation);
   const rotateBy = useLayoutEditor((s) => s.rotateBy);
   const remove = useLayoutEditor((s) => s.remove);
@@ -238,18 +239,31 @@ export function Inspector() {
           />
         </label>
       </div>
-      <label className="field">
-        <span>회전 (°)</span>
-        <input
-          type="number"
-          step={1}
-          min={0}
-          max={359}
-          value={target.rotation_deg}
-          disabled={readOnly}
-          onChange={(e) => setRotation(target.key, Number(e.target.value))}
-        />
-      </label>
+      <div className="form__row form__row--2">
+        <label className="field">
+          <span>Z 높이 (mm)</span>
+          <input
+            type="number"
+            step={10}
+            min={0}
+            value={target.z_mm}
+            disabled={readOnly}
+            onChange={(e) => setElevation(target.key, Number(e.target.value))}
+          />
+        </label>
+        <label className="field">
+          <span>회전 (°)</span>
+          <input
+            type="number"
+            step={1}
+            min={0}
+            max={359}
+            value={target.rotation_deg}
+            disabled={readOnly}
+            onChange={(e) => setRotation(target.key, Number(e.target.value))}
+          />
+        </label>
+      </div>
       <div className="form__actions">
         <button
           type="button"
@@ -269,8 +283,8 @@ export function Inspector() {
         </button>
       </div>
       <p className="field__hint">
-        드래그 이동(10 mm 스냅) · 방향키 10 mm, Shift 100 mm · R 회전 · Delete
-        제거
+        드래그 이동(10 mm 스냅) · Ctrl(⌘)+드래그 높이 · 방향키 10 mm, Shift 100
+        mm · Ctrl(⌘)+↑↓ 높이 · R 회전 · Delete 제거
       </p>
     </div>
   );

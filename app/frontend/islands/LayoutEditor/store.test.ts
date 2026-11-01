@@ -170,6 +170,20 @@ describe("layout editor store", () => {
     expect(useLayoutEditor.getState().dirty).toBe(true);
   });
 
+  it("sets elevation with 10 mm snap, never below the floor, and marks dirty", async () => {
+    await loadLatest();
+    const s = useLayoutEditor.getState();
+    const key = working()[0]?.key ?? "";
+    s.setElevation(key, 1234);
+    expect(working()[0]?.z_mm).toBe(1230);
+    s.select(key);
+    s.elevateSelected(-5000);
+    expect(working()[0]?.z_mm).toBe(0);
+    s.elevateSelected(100);
+    expect(working()[0]?.z_mm).toBe(100);
+    expect(useLayoutEditor.getState().dirty).toBe(true);
+  });
+
   it("skips rechecks while dragging and rechecks on drop", async () => {
     await loadLatest();
     const s = useLayoutEditor.getState();

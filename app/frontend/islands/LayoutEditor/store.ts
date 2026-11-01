@@ -76,6 +76,9 @@ export interface LayoutEditorState {
   addFixture: (fixtureId: number) => void;
   select: (key: string | null) => void;
   setPosition: (key: string, x_mm: number, y_mm: number) => void;
+  /** 배치 높이(바닥에서 집기 바닥까지, mm). 0 이상, 10 mm 스냅 */
+  setElevation: (key: string, z_mm: number) => void;
+  elevateSelected: (dz: number) => void;
   setRotation: (key: string, rotation_deg: number) => void;
   rotateBy: (key: string, delta: number) => void;
   nudgeSelected: (dx: number, dy: number) => void;
@@ -335,6 +338,25 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
         !s.dragging,
       ),
     );
+  },
+
+  setElevation(key, z_mm) {
+    if (get().readOnly) return;
+    set((s) =>
+      withWorking(
+        s,
+        s.working.map((w) =>
+          w.key === key ? { ...w, z_mm: Math.max(0, snapMm(z_mm)) } : w,
+        ),
+        !s.dragging,
+      ),
+    );
+  },
+
+  elevateSelected(dz) {
+    const { selectedKey, working } = get();
+    const target = working.find((w) => w.key === selectedKey);
+    if (target) get().setElevation(target.key, target.z_mm + dz);
   },
 
   setRotation(key, rotation_deg) {
