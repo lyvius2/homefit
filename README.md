@@ -70,7 +70,8 @@ openssl rand -hex 64        # SECRET_KEY_BASE 값으로 붙여 넣는다
 | `HOMEFIT_PORT` | `3000` | 호스트(Mac mini)에서 열 포트 |
 | `HOMEFIT_IMAGE` / `HOMEFIT_IMAGE_TAG` | `docker.io/<id>/homefit` / `latest` | Docker Hub 에서 받을 이미지. 비우면 로컬 빌드 `homefit:latest` |
 | `HOMEFIT_FORCE_SSL` | `0` | TLS 프록시 뒤에 둘 때만 `1` |
-| `RAILS_LOG_LEVEL` / `RAILS_MAX_THREADS` | 생략 가능 | 기본 `info` / `3` |
+| `RAILS_LOG_LEVEL` / `RAILS_MAX_THREADS` | 생략 가능 | 기본 `info` / `3`. 스레드 수 = DB 커넥션 풀 크기 |
+| `HOMEFIT_DB_KEEPALIVE_SECONDS` | `10` | 이 주기로 풀 커넥션에 `SELECT 1`. 실패는 `db_keepalive` JSON 로그(warn), `0` 이면 끔 |
 
 ### 2. 처음 띄우기
 

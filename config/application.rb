@@ -23,6 +23,10 @@ module Homefit
     #
     # 표시 시간대 (JDBC serverTimezone=Asia/Seoul 요구에 대응). DB 에는 UTC 로 저장한다.
     config.time_zone = "Seoul"
+
+    # DB keepalive(SELECT 1) 주기(초). 0 이면 끔. production 은 기본 10 (environments/production.rb), 그 외 0.
+    # app/lib/db_keepalive.rb, initializers/db_keepalive.rb
+    config.x.db_keepalive_interval = Integer(ENV.fetch("HOMEFIT_DB_KEEPALIVE_SECONDS", "0"))
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

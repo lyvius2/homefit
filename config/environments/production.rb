@@ -28,6 +28,9 @@ Rails.application.configure do
   # Mac mini 의 LAN 에서 http 로 접속한다. 앞에 TLS 프록시를 두면 HOMEFIT_FORCE_SSL=1 로 켠다 (ADR 0003).
   config.assume_ssl = ENV["HOMEFIT_FORCE_SSL"] == "1"
 
+  # 10초마다 풀 커넥션으로 SELECT 1 (외부 MySQL 유휴 끊김 방지 + 끊김 로그). HOMEFIT_DB_KEEPALIVE_SECONDS=0 이면 끔.
+  config.x.db_keepalive_interval = Integer(ENV.fetch("HOMEFIT_DB_KEEPALIVE_SECONDS", "10"))
+
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = ENV["HOMEFIT_FORCE_SSL"] == "1"
 
