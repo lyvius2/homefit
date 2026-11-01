@@ -217,14 +217,17 @@ SVG는 거부한다(스크립트 삽입 위험).
   "walls": [
     { "id": "w01", "a": [0, 0], "b": [9900, 0], "thickness_mm": 200 }
   ],
-  "openings": [                                            // v1에서는 빈 배열 허용
+  "openings": [                                            // 빈 배열 허용
     { "id": "o01", "wall_id": "w01", "offset_mm": 1200, "width_mm": 900,
-      "height_mm": 2100, "sill_mm": 0, "type": "door" }    // type: door | window
+      "height_mm": 2100, "sill_mm": 0, "type": "door",     // type: door | window
+      "swing": { "hinge": "a", "side": "left" } }          // 여닫이문 전용(선택). 없으면 열림 영역 없음
   ]
 }
 ```
 
 - 벽 좌표는 mm 정수. 이미지 px 좌표는 저장하지 않는다(축척 변경 시 재계산 문제 방지). 에디터가 px ↔ mm 변환을 담당.
+- `offset_mm`은 벽 `a`에서 개구부 시작점까지의 거리. `offset_mm + width_mm ≤ 벽 길이`, 같은 벽의 개구부끼리 겹치지 않아야 한다(맞닿음은 허용). 창에는 `swing`을 둘 수 없다.
+- `swing.hinge`: 경첩이 개구부 시작 끝(`a`)인지 끝 끝(`b`)인지. `swing.side`: 벽 진행 방향 a→b 기준 열리는 면. y가 아래로 +인 평면에서 `right` 법선 = (−uy, ux), `left` = (uy, −ux). 미닫이문은 다루지 않는다(M8, ADR 0005).
 - 외곽 바운딩 박스(충돌 판정의 "외곽")는 벽 끝점 ± 두께/2 로 서버에서 계산한다. 별도 저장하지 않음.
 - 스키마 검증은 `json_schemer` gem, 스키마 파일은 `app/schemas/plan_v1.json`.
 

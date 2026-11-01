@@ -49,13 +49,43 @@ module Plans
       end
     end
 
+    # 참조 무결성 → 벽 길이 안에 들어가는지 → 같은 벽의 개구부끼리 겹치지 않는지 → swing 은 문에만.
     def check_openings(violations)
-      ids = walls.map { |w| w["id"] }
-      @plan.fetch("openings").each_with_index do |opening, i|
-        next if ids.include?(opening["wall_id"])
+      by_id = walls.index_by { |w| w["id"] }
+      openings = @plan.fetch("openings")
 
-        violations << Violation.new(code: "opening_wall_missing", message: "개구부 #{opening['id']} 가 가리키는 벽 #{opening['wall_id']} 이 없습니다.", path: "/openings/#{i}/wall_id")
+      openings.each_with_index do |opening, i|
+        wall = by_id[opening["wall_id"]]
+        unless wall
+          violations << Violation.new(code: "opening_wall_missing", message: "개구부 #{opening['id']} 가 가리키는 벽 #{opening['wall_id']} 이 없습니다.", path: "/openings/#{i}/wall_id")
+          next
+        end
+
+        if opening["offset_mm"] + opening["width_mm"] > wall_length(wall)
+          violations << Violation.new(code: "opening_outside_wall", message: "개구부 #{opening['id']} 가 벽 #{wall['id']} 길이(#{wall_length(wall)} mm)를 벗어납니다.", path: "/openings/#{i}/offset_mm")
+        end
+
+        if opening["type"] == "window" && opening["swing"]
+          violations << Violation.new(code: "swing_on_window", message: "창 #{opening['id']} 에는 열림 방향(swing)을 둘 수 없습니다.", path: "/openings/#{i}/swing")
+        end
       end
+
+      openings.each_with_index do |opening, i|
+        earlier = openings.first(i).find { |o| o["wall_id"] == opening["wall_id"] && ranges_overlap?(o, opening) }
+        next unless earlier
+
+        violations << Violation.new(code: "opening_overlap", message: "개구부 #{opening['id']} 가 같은 벽의 #{earlier['id']} 와 겹칩니다.", path: "/openings/#{i}")
+      end
+    end
+
+    def wall_length(wall)
+      (ax, ay), (bx, by) = wall["a"], wall["b"]
+      Math.hypot(bx - ax, by - ay).round
+    end
+
+    # 벽을 따라 [offset, offset+width) 구간이 겹치는지. 맞닿는 것(간격 0)은 겹침이 아니다.
+    def ranges_overlap?(o1, o2)
+      o1["offset_mm"] < o2["offset_mm"] + o2["width_mm"] && o2["offset_mm"] < o1["offset_mm"] + o1["width_mm"]
     end
 
     # R-04: 도면 이미지를 쓰면 축척이 있어야 한다. R-05: 검증 측정 오차는 서버가 다시 계산해 3% 초과면 거부.

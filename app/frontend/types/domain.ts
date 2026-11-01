@@ -12,6 +12,12 @@ export interface Wall {
 
 export type OpeningType = "door" | "window";
 
+/** 여닫이문의 경첩 위치·열림 방향 (설계서 Section 2.3). hinge: 개구부 시작(벽 a 쪽)/끝(b 쪽), side: a→b 기준 왼쪽/오른쪽 */
+export interface DoorSwing {
+  hinge: "a" | "b";
+  side: "left" | "right";
+}
+
 export interface Opening {
   id: string;
   wall_id: string;
@@ -20,6 +26,8 @@ export interface Opening {
   height_mm: number;
   sill_mm: number;
   type: OpeningType;
+  /** door 전용. 없으면 열림 영역을 만들지 않는다 */
+  swing?: DoorSwing;
 }
 
 export interface PlanImage {

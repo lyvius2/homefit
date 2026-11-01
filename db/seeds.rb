@@ -37,9 +37,14 @@ SAMPLE_PLAN = {
     { "id" => "w10", "a" => [ 2100, 4500 ], "b" => [ 2100, 6300 ], "thickness_mm" => 120 }
   ],
   "openings" => [
-    { "id" => "o01", "wall_id" => "w03", "offset_mm" => 4200, "width_mm" => 1000, "height_mm" => 2100, "sill_mm" => 0, "type" => "door" },
-    { "id" => "o02", "wall_id" => "w06", "offset_mm" => 2400, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door" },
-    { "id" => "o03", "wall_id" => "w08", "offset_mm" => 600, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door" },
+    # w03 은 (9900,6300)→(0,6300) 으로 왼쪽 진행이라 right 법선이 (0,-1) = 집 안쪽. 안으로 열리는 현관문
+    { "id" => "o01", "wall_id" => "w03", "offset_mm" => 4200, "width_mm" => 1000, "height_mm" => 2100, "sill_mm" => 0, "type" => "door",
+      "swing" => { "hinge" => "a", "side" => "right" } },
+    # w06 은 (0,3000)→(3600,3000) 으로 오른쪽 진행, left 법선 (0,-1) = 방(위쪽) 안으로 열림
+    { "id" => "o02", "wall_id" => "w06", "offset_mm" => 2400, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door",
+      "swing" => { "hinge" => "b", "side" => "left" } },
+    { "id" => "o03", "wall_id" => "w08", "offset_mm" => 600, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door",
+      "swing" => { "hinge" => "a", "side" => "left" } },
     { "id" => "o04", "wall_id" => "w01", "offset_mm" => 600, "width_mm" => 2400, "height_mm" => 1500, "sill_mm" => 900, "type" => "window" }
   ]
 }.freeze

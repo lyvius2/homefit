@@ -96,7 +96,26 @@
         "width_mm": { "$ref": "#/$defs/positive_mm" },
         "height_mm": { "$ref": "#/$defs/positive_mm" },
         "sill_mm": { "type": "integer", "minimum": 0 },
-        "type": { "enum": ["door", "window"] }
+        "type": { "enum": ["door", "window"] },
+        "swing": {
+          "description": "여닫이문의 경첩·열림 방향. door 전용이며 없으면 열림 영역을 만들지 않는다",
+          "$ref": "#/$defs/swing"
+        }
+      }
+    },
+    "swing": {
+      "type": "object",
+      "required": ["hinge", "side"],
+      "additionalProperties": false,
+      "properties": {
+        "hinge": {
+          "description": "경첩이 개구부 시작점(벽 a 쪽) 끝인지 끝점(벽 b 쪽) 끝인지",
+          "enum": ["a", "b"]
+        },
+        "side": {
+          "description": "벽 진행 방향 a→b 기준 문이 열리는 면 (y 가 아래로 + 인 평면에서 right 법선 = (-uy, ux))",
+          "enum": ["left", "right"]
+        }
       }
     }
   }

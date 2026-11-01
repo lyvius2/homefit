@@ -66,6 +66,18 @@ module Plans
       assert_equal [ "/openings/0/type", "/walls/0" ], result.errors.map { |e| e[:path] }.sort
     end
 
+    test "swing is optional and must be hinge a/b with side left/right" do
+      plan = FULL_PLAN.deep_dup
+      plan["openings"][0]["swing"] = { "hinge" => "b", "side" => "right" }
+      assert Plans::Schema.call(plan).ok?
+
+      plan["openings"][0]["swing"] = { "hinge" => "start", "side" => "right" }
+      assert_equal [ "/openings/0/swing/hinge" ], Plans::Schema.call(plan).errors.map { |e| e[:path] }
+
+      plan["openings"][0]["swing"] = { "hinge" => "a" }
+      assert_not Plans::Schema.call(plan).ok?
+    end
+
     test "scale fields may be null but not negative" do
       plan = FULL_PLAN.deep_dup
       plan["scale"] = { "px_per_mm" => nil, "measured_mm" => nil, "verify" => nil }

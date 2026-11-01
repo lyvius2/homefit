@@ -61,6 +61,27 @@ module Plans
       assert_equal "/openings/0/wall_id", result.violations[2].path
     end
 
+    test "rejects openings that run past the wall, overlap on the same wall, or put swing on a window" do
+      door = { "id" => "o01", "wall_id" => "w01", "offset_mm" => 9200, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door",
+               "swing" => { "hinge" => "a", "side" => "left" } }
+      p = plan(openings: [
+        door,
+        { "id" => "o02", "wall_id" => "w02", "offset_mm" => 1000, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door" },
+        { "id" => "o03", "wall_id" => "w02", "offset_mm" => 1899, "width_mm" => 800, "height_mm" => 2100, "sill_mm" => 0, "type" => "door" },
+        { "id" => "o04", "wall_id" => "w02", "offset_mm" => 2699, "width_mm" => 600, "height_mm" => 1200, "sill_mm" => 900, "type" => "window",
+          "swing" => { "hinge" => "b", "side" => "right" } }
+      ])
+      result = Plans::Validate.call(p)
+
+      assert_equal %w[opening_outside_wall swing_on_window opening_overlap], codes(result)
+      assert_equal "/openings/0/offset_mm", result.violations[0].path
+      assert_equal "/openings/3/swing", result.violations[1].path
+      assert_equal "/openings/2", result.violations[2].path, "o03 은 o02 와 1 mm 겹침. o04 는 o03 과 맞닿기만 함"
+
+      door["offset_mm"] = 9000
+      assert Plans::Validate.call(plan(openings: [ door ])).valid?, "offset + width == 벽 길이는 허용"
+    end
+
     test "accepts symbol keys" do
       assert Plans::Validate.call(plan.deep_symbolize_keys).valid?
     end
