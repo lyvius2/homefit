@@ -284,8 +284,9 @@ export function Inspector() {
         </button>
       </div>
       <p className="field__hint">
-        드래그 이동(10 mm 스냅) · Ctrl(⌘)+드래그 높이 · 방향키 10 mm, Shift 100
-        mm · Ctrl(⌘)+↑↓ 높이 · R 회전 · Delete 제거
+        드래그 이동(10 mm 스냅, 놓으면 아래 집기 위에 올라감) · Ctrl(⌘)+드래그
+        높이 · 방향키 10 mm, Shift 100 mm · Ctrl(⌘)+↑↓ 높이 · R 회전 · Delete
+        제거
       </p>
     </div>
   );

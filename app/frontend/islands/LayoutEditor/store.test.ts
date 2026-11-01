@@ -184,6 +184,21 @@ describe("layout editor store", () => {
     expect(useLayoutEditor.getState().dirty).toBe(true);
   });
 
+  it("settles a dropped fixture on top of the fixture under it, or on the floor", async () => {
+    await loadLatest();
+    const s = useLayoutEditor.getState();
+    const [first, second] = working();
+    if (!first || !second) throw new Error("fixture");
+    // second 를 first 위로 옮겨 놓으면 first 윗면 높이로
+    s.setPosition(second.key, first.x_mm, first.y_mm);
+    s.settle(second.key);
+    expect(working()[1]?.z_mm).toBe(first.height_mm);
+    // 아무것도 없는 곳으로 옮겨 놓으면 바닥으로
+    s.setPosition(second.key, first.x_mm + 50_000, first.y_mm);
+    s.settle(second.key);
+    expect(working()[1]?.z_mm).toBe(0);
+  });
+
   it("skips rechecks while dragging and rechecks on drop", async () => {
     await loadLatest();
     const s = useLayoutEditor.getState();

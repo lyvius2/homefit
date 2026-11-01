@@ -15,6 +15,7 @@ import type {
   Plan,
   VersionSummary,
 } from "~/types/domain";
+import { restingZ } from "./stacking";
 
 export interface WorkingPlacement {
   key: string;
@@ -79,6 +80,8 @@ export interface LayoutEditorState {
   /** 배치 높이(바닥에서 집기 바닥까지, mm). 0 이상, 10 mm 스냅 */
   setElevation: (key: string, z_mm: number) => void;
   elevateSelected: (dz: number) => void;
+  /** 드래그해서 놓은 집기를 아래 집기 윗면(없으면 바닥)에 올린다 */
+  settle: (key: string) => void;
   setRotation: (key: string, rotation_deg: number) => void;
   rotateBy: (key: string, delta: number) => void;
   nudgeSelected: (dx: number, dy: number) => void;
@@ -360,6 +363,20 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
     const { selectedKey, working } = get();
     const target = working.find((w) => w.key === selectedKey);
     if (target) get().setElevation(target.key, target.z_mm + dz);
+  },
+
+  settle(key) {
+    if (get().readOnly) return;
+    set((s) => {
+      const z_mm = restingZ(s.working, key);
+      const target = s.working.find((w) => w.key === key);
+      if (!target || target.z_mm === z_mm) return {};
+      return withWorking(
+        s,
+        s.working.map((w) => (w.key === key ? { ...w, z_mm } : w)),
+        !s.dragging,
+      );
+    });
   },
 
   setRotation(key, rotation_deg) {

@@ -32,6 +32,7 @@ export default function FixtureMesh({ placement, selected, violated }: Props) {
   const select = useLayoutEditor((s) => s.select);
   const setPosition = useLayoutEditor((s) => s.setPosition);
   const setElevation = useLayoutEditor((s) => s.setElevation);
+  const settle = useLayoutEditor((s) => s.settle);
   const setDragging = useLayoutEditor((s) => s.setDragging);
   const readOnly = useLayoutEditor((s) => s.readOnly);
   const viewportHeight = useThree((s) => s.size.height);
@@ -139,9 +140,12 @@ export default function FixtureMesh({ placement, selected, violated }: Props) {
   };
 
   const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (!grab.current) return;
+    const g = grab.current;
+    if (!g) return;
     grab.current = null;
     (e.target as Element).releasePointerCapture(e.pointerId);
+    // 평면 드래그로 놓으면 아래 집기 위(없으면 바닥)에 올린다. 높이 드래그(Ctrl)는 그대로 둔다
+    if (g.mode === "move") settle(placement.key);
     setDragging(false);
   };
 
