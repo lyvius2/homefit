@@ -2,6 +2,7 @@
 // Ruby 구현(app/lib/geometry/{bounds,collisions}.rb)과 같은 테스트 벡터(docs/geometry-fixtures.json)로 검증한다.
 import type { Opening, PlacementViolation, Wall } from "~/types/domain";
 import {
+  EPSILON,
   convexIntersects,
   convexOfObb,
   convexOfPolygon,
@@ -20,6 +21,25 @@ export interface Footprint {
   width: number;
   depth: number;
   rotation_deg: number;
+  /** 바닥에서 띄운 높이(mm). 생략 시 0 */
+  z?: number;
+  /** 집기 높이(mm). 생략 시 무한(높이를 모르는 옛 벡터) */
+  height?: number;
+}
+
+type Span = readonly [number, number];
+
+function verticalSpan(f: Footprint): Span {
+  const bottom = f.z ?? 0;
+  return [
+    bottom,
+    f.height === undefined ? Number.POSITIVE_INFINITY : bottom + f.height,
+  ];
+}
+
+/** 접촉(책상 윗면 = 모니터 바닥)은 겹침이 아니다 */
+function spansOverlap(a: Span, b: Span): boolean {
+  return Math.min(a[1], b[1]) - Math.max(a[0], b[0]) > EPSILON;
 }
 
 export interface Bounds {
@@ -82,13 +102,18 @@ export function doorZonesOf(
   return zones;
 }
 
-/** 위반이 있는 배치만, index 오름차순. reasons 순서: overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds */
+/**
+ * 위반이 있는 배치만, index 오름차순. reasons 순서: overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds.
+ * 집기끼리는 평면 SAT 에 더해 수직 구간 [z, z+height] 도 겹쳐야 겹침(책상 위 모니터). 문 열림 영역은 문짝이 지나는
+ * [sill, sill+height] 와 수직으로 겹칠 때만 침범(문 위 선반). 벽은 바닥부터 천장까지라 평면만 본다.
+ */
 export function checkCollisions(
   walls: readonly Wall[],
   footprints: readonly Footprint[],
   openings: readonly Opening[] = [],
 ): PlacementViolation[] {
   const boxes = footprints.map(obbFromFootprint);
+  const spans = footprints.map(verticalSpan);
   const wallBoxes = walls.map((w) => ({
     id: w.id,
     box: obbFromSegment({
@@ -99,24 +124,33 @@ export function checkCollisions(
       thickness: w.thickness_mm,
     }),
   }));
-  const doorZones = doorZonesOf(walls, openings).map(({ id, zone }) => ({
-    id,
-    convex: convexOfPolygon(zone),
-  }));
+  const openingById = new Map(openings.map((o) => [o.id, o]));
+  const doorZones = doorZonesOf(walls, openings).map(({ id, zone }) => {
+    const o = openingById.get(id);
+    const sill = o?.sill_mm ?? 0;
+    const span: Span = [sill, sill + (o?.height_mm ?? 0)];
+    return { id, convex: convexOfPolygon(zone), span };
+  });
   const bounds = boundsOfWalls(walls);
 
   const violations: PlacementViolation[] = [];
   boxes.forEach((box, i) => {
     const reasons: string[] = [];
+    const span = spans[i] ?? [0, Number.POSITIVE_INFINITY];
     boxes.forEach((other, j) => {
-      if (i !== j && satIntersects(box, other)) reasons.push(`overlap:${j}`);
+      const otherSpan = spans[j] ?? [0, Number.POSITIVE_INFINITY];
+      if (i !== j && spansOverlap(span, otherSpan) && satIntersects(box, other))
+        reasons.push(`overlap:${j}`);
     });
     for (const wall of wallBoxes) {
       if (satIntersects(box, wall.box)) reasons.push(`wall:${wall.id}`);
     }
     const convex = convexOfObb(box);
     for (const door of doorZones) {
-      if (convexIntersects(convex, door.convex))
+      if (
+        spansOverlap(span, door.span) &&
+        convexIntersects(convex, door.convex)
+      )
         reasons.push(`door:${door.id}`);
     }
     if (bounds && outside(box, bounds)) reasons.push("out_of_bounds");

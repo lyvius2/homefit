@@ -68,6 +68,19 @@ module Placements
       assert_equal [ { placement_index: 0, reasons: [ "door:o01" ] } ], result.violations
     end
 
+    test "a monitor resting on a desk top does not overlap it, but one sunk into it does" do
+      desk = Fixture.create!(name: "책상", kind: "furniture", width_mm: 1200, depth_mm: 600, height_mm: 730, color: "#aaaaaa")
+      monitor = Fixture.create!(name: "모니터", kind: "appliance", width_mm: 600, depth_mm: 200, height_mm: 400, color: "#bbbbbb")
+      on_top = [ placement(desk, 2000, 2000), { fixture_id: monitor.id, x_mm: 2000, y_mm: 1900, z_mm: 730, rotation_deg: 0 } ]
+      assert Placements::Validate.call(house: @house, placements: on_top).valid?
+
+      sunk = [ placement(desk, 2000, 2000), { fixture_id: monitor.id, x_mm: 2000, y_mm: 1900, z_mm: 700, rotation_deg: 0 } ]
+      assert_equal [
+        { placement_index: 0, reasons: [ "overlap:1" ] },
+        { placement_index: 1, reasons: [ "overlap:0" ] }
+      ], Placements::Validate.call(house: @house, placements: sunk).violations
+    end
+
     test "house without walls only checks overlaps" do
       @house.update!(plan: House::DEFAULT_PLAN)
       result = Placements::Validate.call(house: @house, placements: [ placement(@fridge, -99_999, 0) ])

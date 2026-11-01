@@ -165,6 +165,8 @@ export function computeViolations(
       width: w.width_mm,
       depth: w.depth_mm,
       rotation_deg: w.rotation_deg,
+      z: w.z_mm,
+      height: w.height_mm,
     })),
     plan?.openings ?? [],
   );

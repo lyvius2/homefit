@@ -659,7 +659,7 @@
       "expect": null
     }
   ],
-  "collisions_description": "footprints 는 집기 바닥면 중심·치수·회전. expect 는 위반이 있는 배치만 index 오름차순, reasons 는 overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds 순. openings 는 선택(없으면 빈 배열).",
+  "collisions_description": "footprints 는 집기 바닥면 중심·치수·회전. expect 는 위반이 있는 배치만 index 오름차순, reasons 는 overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds 순. openings 는 선택(없으면 빈 배열). footprints 의 z(바닥에서 띄운 높이, 생략 시 0)·height(생략 시 무한): 집기끼리는 수직 구간도 겹쳐야 overlap, 문 열림 영역은 [sill, sill+height] 와 수직으로 겹쳐야 door.",
   "collisions": [
     {
       "id": "no_violations",
@@ -1320,6 +1320,289 @@
         {
           "placement_index": 0,
           "reasons": ["wall:w01", "door:o01"]
+        }
+      ]
+    },
+    {
+      "id": "monitor_on_desk_top_is_not_overlap",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 2000,
+          "y": 2000,
+          "width": 1200,
+          "depth": 600,
+          "rotation_deg": 0,
+          "z": 0,
+          "height": 730
+        },
+        {
+          "x": 2000,
+          "y": 1900,
+          "width": 600,
+          "depth": 200,
+          "rotation_deg": 0,
+          "z": 730,
+          "height": 400
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "monitor_sunk_into_desk_overlaps",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 2000,
+          "y": 2000,
+          "width": 1200,
+          "depth": 600,
+          "rotation_deg": 0,
+          "z": 0,
+          "height": 730
+        },
+        {
+          "x": 2000,
+          "y": 1900,
+          "width": 600,
+          "depth": 200,
+          "rotation_deg": 0,
+          "z": 700,
+          "height": 400
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["overlap:1"]
+        },
+        {
+          "placement_index": 1,
+          "reasons": ["overlap:0"]
+        }
+      ]
+    },
+    {
+      "id": "footprint_without_height_overlaps_at_any_z",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "footprints": [
+        {
+          "x": 2000,
+          "y": 2000,
+          "width": 1200,
+          "depth": 600,
+          "rotation_deg": 0
+        },
+        {
+          "x": 2000,
+          "y": 1900,
+          "width": 600,
+          "depth": 200,
+          "rotation_deg": 0,
+          "z": 5000,
+          "height": 400
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["overlap:1"]
+        },
+        {
+          "placement_index": 1,
+          "reasons": ["overlap:0"]
+        }
+      ]
+    },
+    {
+      "id": "shelf_above_door_is_not_in_swing_zone",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door",
+          "swing": {
+            "hinge": "a",
+            "side": "right"
+          }
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1500,
+          "y": 600,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0,
+          "z": 2100,
+          "height": 300
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "shelf_within_door_height_is_in_swing_zone",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door",
+          "swing": {
+            "hinge": "a",
+            "side": "right"
+          }
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1500,
+          "y": 600,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0,
+          "z": 2000,
+          "height": 300
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["door:o01"]
         }
       ]
     }

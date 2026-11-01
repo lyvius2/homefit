@@ -22,7 +22,8 @@ module Placements
       @placements.each_with_index do |p, i|
         fixture = fixtures[p[:fixture_id]]
         if fixture
-          present << [ { x: p[:x_mm], y: p[:y_mm], width: fixture.width_mm, depth: fixture.depth_mm, rotation_deg: p[:rotation_deg] }, i ]
+          present << [ { x: p[:x_mm], y: p[:y_mm], width: fixture.width_mm, depth: fixture.depth_mm, rotation_deg: p[:rotation_deg],
+                         z: p[:z_mm].to_i, height: fixture.height_mm }, i ]
         else
           missing << i
         end
