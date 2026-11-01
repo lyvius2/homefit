@@ -2,8 +2,8 @@
 #
 #   cp .env.example .env            # HOMEFIT_DB_*, SECRET_KEY_BASE, HOMEFIT_SEED_USERS 채우기
 #   docker compose build
-#   docker compose run --rm web bin/rails db:seed   # 최초 1회: 계정 + 예시 데이터
-#   docker compose up -d                            # http://<mac-mini>:3000
+#   docker compose up -d            # 최초 기동 시 DB 생성 + 스키마 + 시드(계정·예시 데이터), 이후는 마이그레이션만
+#                                   # http://<mac-mini>:3000  — 운영 절차 전체는 README.md "운영" 절
 #
 services:
   web:

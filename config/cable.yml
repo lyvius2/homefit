@@ -1,3 +1,4 @@
+# Action Cable 은 쓰지 않는다 (채널·브로드캐스트 없음). production 도 Redis 없이 async 로 두어 외부 의존을 MySQL 하나로 유지한다 (ADR 0003).
 development:
   adapter: async
 
@@ -5,6 +6,4 @@ test:
   adapter: test
 
 production:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  channel_prefix: homefit_production
+  adapter: async

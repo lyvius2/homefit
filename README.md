@@ -11,7 +11,7 @@
 | 백엔드 | Ruby 3.4, Rails 8, MySQL 8.0 (utf8mb4, 외부 서버) |
 | 프론트 | vite_rails, React 19 + TypeScript(strict), Turbo/Stimulus |
 | 3D / 2D | three + @react-three/fiber + @react-three/drei, konva + react-konva |
-| 파일 / 잡 | Active Storage(Disk) + libvips, Solid Queue |
+| 파일 / 잡 | Active Storage(Disk) + libvips, Active Job(async, 프로세스 내). Redis 없음 |
 | 테스트 / 분석 | Minitest, vitest, rubocop, brakeman, erb_lint, eslint, prettier, tsc |
 
 ## 요구 사항
@@ -37,17 +37,105 @@ bin/rails test:system        # 브라우저 시스템 테스트 (Chrome)
 bin/rails console            # 시드 데이터 확인: House.first.plan, Layout.first.latest_version.placements
 ```
 
-## 배포 (Docker, Mac mini)
+## 운영 (Docker, Mac mini)
+
+Mac mini 한 대에서 `docker compose` 로 웹 컨테이너 1개를 띄웁니다. 외부 의존은 **외부 MySQL 하나**뿐입니다. Redis 는 쓰지 않습니다(캐시는 파일, 잡은 프로세스 안 async, Action Cable 미사용). 결정 배경은 [docs/decisions/0003-docker-single-db.md](docs/decisions/0003-docker-single-db.md).
+
+### 1. 준비: 어떤 파일에 무엇을 넣는지
+
+편집할 파일은 저장소 루트의 **`.env` 하나**입니다(커밋하지 않음). `Dockerfile`, `compose.yml` 은 손대지 않습니다.
 
 ```bash
-cp .env.example .env                              # HOMEFIT_DB_*, SECRET_KEY_BASE(bin/rails secret), HOMEFIT_SEED_USERS
-docker compose build                              # Ruby 3.4 + libvips + Vite 빌드가 든 이미지
-docker compose run --rm web bin/rails db:seed     # 최초 1회: 로그인 계정과 예시 데이터
-docker compose up -d                              # http://<mac-mini>:3000 (HOMEFIT_PORT 로 변경)
-docker compose logs -f web                        # JSON 로그 (lograge)
+git clone <repo> homefit && cd homefit
+cp .env.example .env
+openssl rand -hex 64        # SECRET_KEY_BASE 값으로 붙여 넣는다
 ```
 
-DB 는 외부 MySQL 을 그대로 쓰고 업로드 파일은 `homefit-storage` 볼륨에 쌓입니다. 마이그레이션은 컨테이너가 뜰 때 자동 적용됩니다. 자세한 결정은 [docs/decisions/0003-docker-single-db.md](docs/decisions/0003-docker-single-db.md).
+| `.env` 키 | 값 | 비고 |
+|---|---|---|
+| `HOMEFIT_DB_HOST` / `HOMEFIT_DB_PORT` | 외부 MySQL 주소, 포트 | |
+| `HOMEFIT_DB_USERNAME` / `HOMEFIT_DB_PASSWORD` | 접속 계정 | `homefit_production` DB 를 **CREATE/DROP** 할 수 있어야 첫 기동과 초기화가 됩니다 |
+| `HOMEFIT_DB_SSL_MODE` | `required` | JDBC `ssl-mode=REQUIRED` 대응 |
+| `HOMEFIT_DB_TIMEZONE` | `Asia/Seoul` | JDBC `serverTimezone` 대응 |
+| `SECRET_KEY_BASE` | `openssl rand -hex 64` 결과 | 세션 쿠키 서명. 바꾸면 전원 로그아웃 |
+| `HOMEFIT_SEED_USERS` | `a@x.com:비밀번호,b@y.com:비밀번호` | 로그인 계정 2개. 회원가입 화면이 없으므로 여기서만 만듭니다 |
+| `HOMEFIT_PORT` | `3000` | 호스트(Mac mini)에서 열 포트 |
+| `HOMEFIT_FORCE_SSL` | `0` | TLS 프록시 뒤에 둘 때만 `1` |
+| `RAILS_LOG_LEVEL` / `RAILS_MAX_THREADS` | 생략 가능 | 기본 `info` / `3` |
+
+### 2. 처음 띄우기
+
+```bash
+docker compose build          # Ruby 3.4 + libvips + Vite 빌드가 든 이미지 homefit:latest (수 분)
+docker compose up -d          # 컨테이너 시작. entrypoint 가 db:prepare 실행:
+                              #   DB 가 없으면 생성 → 스키마 → 시드(계정 + 예시 주택·집기·배치 1건)
+                              #   DB 가 있으면 미적용 마이그레이션만
+docker compose ps             # web 이 healthy 가 되면 준비 끝 (/up 헬스체크, 최대 40초)
+docker compose logs -f web    # JSON 로그(lograge)
+```
+
+시드가 만든 예시 주택·집기는 화면에서 지워도 됩니다. `.env` 에 `HOMEFIT_SEED_USERS` 를 나중에 넣었다면 계정만 다시 만듭니다.
+
+```bash
+docker compose run --rm web bin/rails db:seed     # 이미 있는 계정·데이터는 건드리지 않음
+```
+
+### 3. 접속과 포트
+
+- 컨테이너 안에서 Puma 는 **3000 고정**이고, 호스트 포트는 `.env` 의 `HOMEFIT_PORT`(기본 3000)입니다. 바꾼 뒤에는 `docker compose up -d` 를 다시 실행하면 됩니다.
+- 같은 LAN 의 다른 기기에서 `http://<Mac mini IP 또는 호스트명.local>:3000` 으로 엽니다. macOS 방화벽이 켜져 있으면 Docker 를 허용해 둡니다.
+- 로그인은 `HOMEFIT_SEED_USERS` 의 이메일·비밀번호입니다. 상태 확인은 `http://<host>:3000/up` (200 이면 정상).
+- 집 밖에서 쓰려면 Caddy 같은 TLS 프록시를 앞에 두고 `HOMEFIT_FORCE_SSL=1` 로 바꿉니다. 프록시 없이 공인망에 3000 을 직접 열지 않습니다.
+
+### 4. 일상 운영
+
+```bash
+docker compose stop / start / restart         # 중지 · 재개 · 재시작 (데이터 유지)
+git pull && docker compose build && docker compose up -d   # 코드 갱신. 마이그레이션은 기동 시 자동
+docker compose run --rm web bin/rails console              # 콘솔
+```
+
+- 비밀번호 변경·계정 추가는 콘솔에서: `User.find_by!(email_address: "a@x.com").update!(password: "새값")`, `User.create!(email_address:, password:)`.
+- 데이터 위치: DB 는 외부 MySQL `homefit_production`, 업로드 파일(도면·집기 이미지)은 Docker 볼륨 `homefit_homefit-storage`.
+
+백업은 둘을 짝으로 받습니다.
+
+```bash
+mysqldump -h $HOMEFIT_DB_HOST -u $HOMEFIT_DB_USERNAME -p --ssl-mode=REQUIRED homefit_production > homefit-$(date +%F).sql
+docker run --rm -v homefit_homefit-storage:/data -v "$PWD":/backup alpine tar czf /backup/storage-$(date +%F).tgz -C /data .
+```
+
+복구는 반대로: `mysql ... homefit_production < 파일.sql`, 그리고 빈 볼륨에 `tar xzf`.
+
+### 5. 중지·삭제
+
+단계가 나뉘어 있습니다. 필요한 만큼만 내려갑니다.
+
+```bash
+docker compose stop                     # 1. 컨테이너만 중지. 볼륨·이미지·DB 그대로
+docker compose down                     # 2. 컨테이너 + 네트워크 제거. 볼륨(업로드 파일)·이미지·DB 유지
+docker compose down -v                  # 3. 2 + 볼륨 homefit_homefit-storage 삭제 (업로드 파일 사라짐)
+docker compose down -v --rmi all        # 4. 3 + 이미지 homefit:latest 삭제
+docker builder prune                    # 5. 빌드 캐시까지 정리 (선택)
+```
+
+개별로 지울 때는 `docker volume rm homefit_homefit-storage`, `docker rmi homefit:latest` 입니다. **외부 MySQL 의 DB 는 어떤 단계에서도 지워지지 않습니다.** 아래 6 을 따로 합니다.
+
+### 6. DB 초기화
+
+DB 는 컨테이너 밖에 있으므로 명시적으로 지웁니다. 초기화하면 업로드 파일도 고아가 되므로 **볼륨과 함께** 지웁니다.
+
+```bash
+docker compose down -v
+docker compose run --rm -e DISABLE_DATABASE_ENVIRONMENT_CHECK=1 web bin/rails db:drop   # homefit_production 삭제
+docker compose up -d                    # 다시 생성 → 스키마 → 시드
+```
+
+`DISABLE_DATABASE_ENVIRONMENT_CHECK=1` 은 production 에서 `db:drop` 을 막는 Rails 안전장치를 끄는 것입니다. 그 한 줄에서만 씁니다. MySQL 클라이언트에서 직접 `DROP DATABASE homefit_production;` 을 해도 같고, 그 뒤 `docker compose up -d` 가 다시 만듭니다. 스키마는 두고 데이터만 비우려면 같은 변수를 붙여 `db:seed:replant` 를 실행합니다(모든 테이블 truncate 후 시드).
+
+```bash
+docker compose run --rm -e DISABLE_DATABASE_ENVIRONMENT_CHECK=1 web bin/rails db:seed:replant
+```
 
 ## 저장소 지도
 

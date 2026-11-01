@@ -13,7 +13,7 @@
 
 ## 운영 메모
 
-- 최초: `docker compose build && docker compose run --rm web bin/rails db:seed && docker compose up -d`
-- 마이그레이션은 컨테이너 시작 시 entrypoint 가 `db:prepare` 로 적용한다.
+- 최초: `docker compose build && docker compose up -d`. entrypoint 의 `db:prepare` 가 DB 가 없으면 생성·스키마·시드까지 하고, 있으면 마이그레이션만 적용한다.
+- Action Cable 은 쓰지 않으므로 `config/cable.yml` production 도 `async` 다. Redis 없음.
 - 백업: `mysqldump`(외부 서버) + `homefit-storage` 볼륨.
 - M7(설계서) 의 "Puma + MySQL 직접 설치" 대신 이 구성을 쓴다. 설계서 Section 7 M7 행을 갱신했다.
