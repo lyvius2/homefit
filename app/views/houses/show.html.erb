@@ -3,7 +3,7 @@
 <div class="page-head">
   <h1><%= @house.name %></h1>
   <div class="page-head__actions">
-    <span class="badge badge--<%= @house.plan_status %>"><%= @house.plan_status_valid? ? "도면 검증됨" : "도면 초안" %></span>
+    <span class="badge badge--<%= @house.plan_status %>"><%= @house.plan_status_valid? ? "검증됨" : "도면 초안" %></span>
     <%= link_to "도면 편집", edit_house_plan_path(@house), class: "btn" %>
     <%= link_to "새 배치도", new_house_layout_path(@house), class: "btn btn--primary" %>
   </div>
