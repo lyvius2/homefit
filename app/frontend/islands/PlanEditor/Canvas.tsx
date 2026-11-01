@@ -1,10 +1,11 @@
-// Konva 캔버스: 도면 배경(또는 100 mm 격자), 벽, 길이 라벨, 그리기 미리보기, 휠 줌, 우클릭 팬.
+// Konva 캔버스: 도면 배경(또는 100 mm 격자), 벽, 길이 라벨, 문·창 개구부(여닫이문 열림 부채꼴), 그리기 미리보기, 휠 줌, 우클릭 팬.
 // 이벤트는 pointer* 만 쓴다 (AGENTS.md).
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Circle,
+  Group,
   Image as KonvaImage,
   Layer,
   Line,
@@ -12,10 +13,12 @@ import {
   Stage,
   Text,
 } from "react-konva";
+import { doorZone } from "~/lib/geometry";
 import { useImage } from "~/lib/useImage";
-import type { Wall } from "~/types/domain";
+import type { Opening, Wall } from "~/types/domain";
 import {
   mmToPx,
+  placeDoor,
   pointPxToMm,
   snapRightAngle,
   snapToEndpoints,
@@ -47,10 +50,13 @@ export default function Canvas() {
   const rightAngle = usePlanEditor((s) => s.rightAngle);
   const thickness = usePlanEditor((s) => s.thickness_mm);
   const selectedWallId = usePlanEditor((s) => s.selectedWallId);
+  const selectedOpeningId = usePlanEditor((s) => s.selectedOpeningId);
+  const doorWidthMm = usePlanEditor((s) => s.doorWidthMm);
   const pendingMm = usePlanEditor((s) => s.pendingMm);
   const pendingPx = usePlanEditor((s) => s.pendingPx);
   const canvasClick = usePlanEditor((s) => s.canvasClick);
   const selectWall = usePlanEditor((s) => s.selectWall);
+  const selectOpening = usePlanEditor((s) => s.selectOpening);
 
   const image = useImage(floorPlanUrl);
   const pxPerMm = renderPxPerMm(plan);
@@ -128,6 +134,8 @@ export default function Canvas() {
   };
 
   const walls = plan?.walls ?? [];
+  const openings = plan?.openings ?? [];
+  const wallById = new Map(walls.map((w) => [w.id, w]));
   const labelFont = 12 / view.scale;
 
   // 벽 그리기 미리보기 끝점(mm)
@@ -140,6 +148,15 @@ export default function Canvas() {
     if (rightAngle) point = snapRightAngle(pendingMm, point);
     previewMm = point;
   }
+
+  // 문 놓기 미리보기
+  const previewDoor =
+    tool === "door" && cursor && pxPerMm
+      ? placeDoor(pointPxToMm(cursor, pxPerMm), walls, openings, doorWidthMm)
+      : null;
+  const previewDoorWall = previewDoor
+    ? wallById.get(previewDoor.wall_id)
+    : undefined;
 
   return (
     <div
@@ -187,6 +204,39 @@ export default function Canvas() {
                 }
               />
             ))}
+
+          {pxPerMm &&
+            openings.map((opening) => {
+              const wall = wallById.get(opening.wall_id);
+              if (!wall) return null;
+              return (
+                <OpeningShape
+                  key={opening.id}
+                  wall={wall}
+                  opening={opening}
+                  pxPerMm={pxPerMm}
+                  selected={opening.id === selectedOpeningId}
+                  viewScale={view.scale}
+                  onSelect={
+                    tool === "select" || tool === "door"
+                      ? () => selectOpening(opening.id)
+                      : undefined
+                  }
+                />
+              );
+            })}
+
+          {pxPerMm && previewDoor && previewDoorWall && (
+            <Group opacity={0.5} listening={false}>
+              <OpeningShape
+                wall={previewDoorWall}
+                opening={previewDoor}
+                pxPerMm={pxPerMm}
+                selected
+                viewScale={view.scale}
+              />
+            </Group>
+          )}
 
           {pxPerMm && pendingMm && previewMm && (
             <Line
@@ -290,6 +340,111 @@ function WallShape({
         offsetY={labelFont + width / 2 + 2 / viewScale}
         listening={false}
       />
+    </>
+  );
+}
+
+/**
+ * 개구부 1개. 벽 위 구간을 지워(destination-out) 틈을 내고, 여닫이문은 열린 문짝과 열림 부채꼴을 그린다.
+ * 부채꼴 꼭짓점은 판정과 같은 doorZone() 에서 온다. 창은 틈 위에 얇은 선.
+ */
+function OpeningShape({
+  wall,
+  opening,
+  pxPerMm,
+  selected,
+  viewScale,
+  onSelect,
+}: {
+  wall: Wall;
+  opening: Opening;
+  pxPerMm: number;
+  selected: boolean;
+  viewScale: number;
+  onSelect?: () => void;
+}) {
+  const [ax, ay] = wall.a;
+  const dx = wall.b[0] - ax;
+  const dy = wall.b[1] - ay;
+  const length = Math.hypot(dx, dy);
+  if (length === 0) return null;
+  const ux = dx / length;
+  const uy = dy / length;
+  const p0: [number, number] = [
+    mmToPx(ax + ux * opening.offset_mm, pxPerMm),
+    mmToPx(ay + uy * opening.offset_mm, pxPerMm),
+  ];
+  const p1: [number, number] = [
+    mmToPx(ax + ux * (opening.offset_mm + opening.width_mm), pxPerMm),
+    mmToPx(ay + uy * (opening.offset_mm + opening.width_mm), pxPerMm),
+  ];
+  const t = mmToPx(wall.thickness_mm, pxPerMm);
+  const color = selected ? "#2563eb" : "#4b5563";
+  const zone = doorZone(wall, opening);
+  const zonePx = zone?.corners.flatMap(([x, y]) => [
+    mmToPx(x, pxPerMm),
+    mmToPx(y, pxPerMm),
+  ]);
+  const hinge = zonePx ? [zonePx[0] ?? 0, zonePx[1] ?? 0] : null;
+  const leafEnd = zonePx
+    ? [zonePx[zonePx.length - 2] ?? 0, zonePx[zonePx.length - 1] ?? 0]
+    : null;
+  const onPointerDown = onSelect
+    ? (e: KonvaEventObject<PointerEvent>) => {
+        if (e.evt.button !== 0) return;
+        e.cancelBubble = true;
+        onSelect();
+      }
+    : undefined;
+
+  return (
+    <>
+      <Line
+        points={[...p0, ...p1]}
+        stroke="#000"
+        strokeWidth={t}
+        globalCompositeOperation="destination-out"
+        listening={false}
+      />
+      {opening.type === "window" && (
+        <Line
+          points={[...p0, ...p1]}
+          stroke="#60a5fa"
+          strokeWidth={Math.max(t * 0.3, 1 / viewScale)}
+          listening={false}
+        />
+      )}
+      {/* 틈 자체를 클릭해 선택할 수 있도록 투명한 선 (선택 시에만 보인다) */}
+      <Line
+        points={[...p0, ...p1]}
+        stroke={color}
+        strokeWidth={t}
+        opacity={selected ? 0.25 : 0}
+        hitStrokeWidth={Math.max(t, 12 / viewScale)}
+        onPointerDown={onPointerDown}
+        listening={Boolean(onSelect)}
+      />
+      {zonePx && hinge && leafEnd && (
+        <>
+          <Line
+            points={zonePx}
+            closed
+            fill={selected ? "rgba(37,99,235,0.14)" : "rgba(75,85,99,0.08)"}
+            stroke={color}
+            strokeWidth={1 / viewScale}
+            dash={[4 / viewScale, 3 / viewScale]}
+            onPointerDown={onPointerDown}
+            listening={Boolean(onSelect)}
+          />
+          <Line
+            points={[...hinge, ...leafEnd]}
+            stroke={color}
+            strokeWidth={Math.max(2 / viewScale, t * 0.25)}
+            lineCap="round"
+            listening={false}
+          />
+        </>
+      )}
     </>
   );
 }

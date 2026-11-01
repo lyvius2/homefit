@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Wall } from "~/types/domain";
 import {
+  clampOpeningOffset,
+  nearestWall,
+  nextOpeningId,
   nextWallId,
+  placeDoor,
   pointPxToMm,
+  projectOntoWall,
   scaleFromPoints,
   snapRightAngle,
   snapToEndpoints,
@@ -37,6 +42,51 @@ describe("planMath", () => {
     ).toBe(5000);
     expect(nextWallId(walls)).toBe("w04");
     expect(nextWallId([])).toBe("w01");
+  });
+
+  it("projects points onto walls and picks the nearest wall within 300 mm", () => {
+    const w01 = walls[0];
+    if (!w01) throw new Error("fixture");
+    expect(projectOntoWall([3000, 250], w01)).toEqual({
+      along_mm: 3000,
+      dist_mm: 250,
+      side: "right", // y 아래가 + 이므로 a→b(동쪽) 의 오른쪽은 아래(남쪽)
+    });
+    expect(projectOntoWall([3000, -250], w01).side).toBe("left");
+    expect(projectOntoWall([-300, 400], w01).dist_mm).toBe(500); // 끝점 a 까지
+    expect(projectOntoWall([-300, 0], w01).along_mm).toBe(-300);
+    expect(nearestWall([5000, 200], walls)?.id).toBe("w01");
+    expect(nearestWall([9700, 3000], walls)?.id).toBe("w03");
+    expect(nearestWall([5000, 3000], walls)).toBeNull();
+  });
+
+  it("places a door centred on the click, snapped and clamped into the wall", () => {
+    const door = placeDoor([3004, 150], walls, [], 800);
+    expect(door).toEqual({
+      id: "o01",
+      wall_id: "w01",
+      offset_mm: 2600,
+      width_mm: 800,
+      height_mm: 2100,
+      sill_mm: 0,
+      type: "door",
+      swing: { hinge: "a", side: "right" },
+    });
+    expect(placeDoor([9850, -100], walls, [], 800)?.offset_mm).toBe(9100);
+    expect(placeDoor([100, -100], walls, [], 800)?.offset_mm).toBe(0);
+    expect(placeDoor([5000, 3000], walls, [], 800)).toBeNull();
+    expect(placeDoor([5000, 0], walls, [], 20000)).toBeNull();
+    expect(
+      nextOpeningId([
+        { ...(door as NonNullable<typeof door>), id: "o07" },
+        { ...(door as NonNullable<typeof door>), id: "x" },
+      ]),
+    ).toBe("o08");
+    const w01 = walls[0];
+    if (!w01) throw new Error("fixture");
+    expect(clampOpeningOffset(w01, 1234, 800)).toBe(1230);
+    expect(clampOpeningOffset(w01, 9500, 800)).toBe(9100);
+    expect(clampOpeningOffset(w01, -50, 800)).toBe(0);
   });
 
   it("derives scale and verify from two points", () => {

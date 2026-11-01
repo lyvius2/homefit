@@ -132,6 +132,88 @@ describe("plan editor store", () => {
     expect(plan.openings).toEqual([]);
   });
 
+  it("places, edits, flips and deletes hinged doors with the door tool", async () => {
+    await loadWith({
+      ...emptyPlan,
+      walls: [
+        { id: "w01", a: [0, 0], b: [9900, 0], thickness_mm: 200 },
+        { id: "w02", a: [9900, 0], b: [9900, 6300], thickness_mm: 200 },
+      ],
+    });
+    let s = usePlanEditor.getState();
+    s.setTool("door");
+    s.setDoorWidth(900);
+    s.canvasClick({ x: 300, y: 10 }); // (3000, 100) mm, w01 의 오른쪽(아래)
+    s = usePlanEditor.getState();
+    expect(currentPlan().openings).toEqual([
+      {
+        id: "o01",
+        wall_id: "w01",
+        offset_mm: 2550,
+        width_mm: 900,
+        height_mm: 2100,
+        sill_mm: 0,
+        type: "door",
+        swing: { hinge: "a", side: "right" },
+      },
+    ]);
+    expect(s.selectedOpeningId).toBe("o01");
+    expect(s.dirty).toBe(true);
+
+    s.canvasClick({ x: 500, y: 300 }); // 어느 벽에서도 300 mm 밖
+    expect(currentPlan().openings).toHaveLength(1);
+    expect(usePlanEditor.getState().notice).toMatch(/벽 가까이/);
+
+    s.flipHinge();
+    s.flipSide();
+    expect(currentPlan().openings[0]?.swing).toEqual({
+      hinge: "b",
+      side: "left",
+    });
+
+    s.updateSelectedOpening({ offset_mm: 9500, width_mm: 1000 });
+    expect(currentPlan().openings[0]).toMatchObject({
+      offset_mm: 8900,
+      width_mm: 1000,
+    });
+
+    s.setTool("select");
+    s.selectWall("w01");
+    expect(usePlanEditor.getState().selectedOpeningId).toBeNull();
+    s.selectOpening("o01");
+    expect(usePlanEditor.getState().selectedWallId).toBeNull();
+    s.deleteSelected();
+    expect(currentPlan().openings).toEqual([]);
+    expect(currentPlan().walls).toHaveLength(2);
+  });
+
+  it("gives legacy doors a default swing on request", async () => {
+    await loadWith({
+      ...emptyPlan,
+      walls: [{ id: "w01", a: [0, 0], b: [9900, 0], thickness_mm: 200 }],
+      openings: [
+        {
+          id: "o01",
+          wall_id: "w01",
+          offset_mm: 100,
+          width_mm: 900,
+          height_mm: 2100,
+          sill_mm: 0,
+          type: "door",
+        },
+      ],
+    });
+    const s = usePlanEditor.getState();
+    s.selectOpening("o01");
+    s.flipHinge(); // swing 이 없으면 무시
+    expect(currentPlan().openings[0]?.swing).toBeUndefined();
+    s.setDefaultSwing();
+    expect(currentPlan().openings[0]?.swing).toEqual({
+      hinge: "a",
+      side: "left",
+    });
+  });
+
   it("saves through the api and surfaces plan_invalid violations", async () => {
     await loadWith(emptyPlan);
     apiMock.savePlan.mockRejectedValueOnce(

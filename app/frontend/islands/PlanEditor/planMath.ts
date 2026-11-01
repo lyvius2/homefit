@@ -1,6 +1,6 @@
 // 도면 에디터의 순수 계산. 캔버스 "월드" 좌표는 이미지 px(이미지가 없으면 NO_IMAGE_PX_PER_MM 로 그린 px),
 // 저장되는 벽 좌표는 정수 mm (R-01). 변환은 여기서만 한다.
-import type { PlanVerify, Point, Wall } from "~/types/domain";
+import type { Opening, PlanVerify, Point, Wall } from "~/types/domain";
 
 /** 도면 이미지가 없을 때 1 mm 를 몇 px 로 그릴지 (100 mm 격자 = 10 px) */
 export const NO_IMAGE_PX_PER_MM = 0.1;
@@ -8,6 +8,11 @@ export const NO_IMAGE_PX_PER_MM = 0.1;
 export const ENDPOINT_SNAP_MM = 150;
 /** 벽 좌표 격자 */
 export const GRID_SNAP_MM = 10;
+/** 문 도구에서 클릭 지점과 벽 사이 허용 거리 */
+export const DOOR_PICK_MM = 300;
+/** 새 문의 기본 폭·높이 */
+export const DOOR_WIDTH_MM = 800;
+export const DOOR_HEIGHT_MM = 2100;
 
 export interface Pt {
   x: number;
@@ -84,13 +89,110 @@ export function verifyFromPoints(
   return { measured_mm, got_mm, error_pct: Number(error_pct) };
 }
 
-/** "w01", "w02", ... 비어 있는 다음 번호 */
-export function nextWallId(walls: readonly Wall[]): string {
-  const max = walls.reduce((acc, w) => {
-    const n = Number(/^w(\d+)$/.exec(w.id)?.[1] ?? 0);
+function nextId(prefix: string, ids: readonly string[]): string {
+  const pattern = new RegExp(`^${prefix}(\\d+)$`);
+  const max = ids.reduce((acc, id) => {
+    const n = Number(pattern.exec(id)?.[1] ?? 0);
     return Math.max(acc, n);
   }, 0);
-  return `w${String(max + 1).padStart(2, "0")}`;
+  return `${prefix}${String(max + 1).padStart(2, "0")}`;
+}
+
+/** "w01", "w02", ... 비어 있는 다음 번호 */
+export function nextWallId(walls: readonly Wall[]): string {
+  return nextId(
+    "w",
+    walls.map((w) => w.id),
+  );
+}
+
+/** "o01", "o02", ... 비어 있는 다음 번호 */
+export function nextOpeningId(openings: readonly Opening[]): string {
+  return nextId(
+    "o",
+    openings.map((o) => o.id),
+  );
+}
+
+/**
+ * 점을 벽 선분에 투영. along_mm 은 a 에서 투영점까지(선분 밖이면 음수·길이 초과 가능),
+ * dist_mm 은 선분(끝점 포함)까지의 최단 거리, side 는 a→b 기준 점이 놓인 면.
+ */
+export function projectOntoWall(
+  p: Point,
+  wall: Wall,
+): { along_mm: number; dist_mm: number; side: "left" | "right" } {
+  const [ax, ay] = wall.a;
+  const dx = wall.b[0] - ax;
+  const dy = wall.b[1] - ay;
+  const len2 = dx * dx + dy * dy;
+  const px = p[0] - ax;
+  const py = p[1] - ay;
+  if (len2 === 0)
+    return { along_mm: 0, dist_mm: Math.hypot(px, py), side: "left" };
+  const t = (px * dx + py * dy) / len2;
+  const tc = Math.min(1, Math.max(0, t));
+  // y 가 아래로 + 인 평면에서 외적 > 0 이면 a→b 의 오른쪽 (설계서 Section 2.3 의 right 법선 (-uy, ux) 쪽)
+  const cross = dx * py - dy * px;
+  return {
+    along_mm: t * Math.sqrt(len2),
+    dist_mm: Math.hypot(px - dx * tc, py - dy * tc),
+    side: cross > 0 ? "right" : "left",
+  };
+}
+
+/** 점에서 maxDist 안에 있는 가장 가까운 벽. 없으면 null */
+export function nearestWall(
+  p: Point,
+  walls: readonly Wall[],
+  maxDist = DOOR_PICK_MM,
+): Wall | null {
+  let best: Wall | null = null;
+  let bestDistance = maxDist;
+  for (const wall of walls) {
+    const { dist_mm } = projectOntoWall(p, wall);
+    if (dist_mm <= bestDistance) {
+      best = wall;
+      bestDistance = dist_mm;
+    }
+  }
+  return best;
+}
+
+/** offset 을 10 mm 격자에 맞추고 [0, 벽 길이 − 폭] 으로 묶는다 */
+export function clampOpeningOffset(
+  wall: Wall,
+  offset_mm: number,
+  width_mm: number,
+): number {
+  const max = Math.max(0, wallLength(wall) - width_mm);
+  const snapped = Math.round(offset_mm / GRID_SNAP_MM) * GRID_SNAP_MM;
+  return Math.min(max, Math.max(0, snapped));
+}
+
+/**
+ * 문 도구 클릭: 가까운 벽에 클릭 지점을 중심으로 폭 width_mm 의 여닫이문을 놓는다.
+ * 열리는 면은 클릭한 쪽, 경첩은 a 쪽(사이드바에서 반전). 벽이 멀거나 문보다 짧으면 null.
+ */
+export function placeDoor(
+  point: Point,
+  walls: readonly Wall[],
+  openings: readonly Opening[],
+  width_mm: number,
+): Opening | null {
+  const wall = nearestWall(point, walls);
+  if (!wall || width_mm > wallLength(wall)) return null;
+  const { along_mm, side } = projectOntoWall(point, wall);
+  return {
+    id: nextOpeningId(openings),
+    wall_id: wall.id,
+    offset_mm: clampOpeningOffset(wall, along_mm - width_mm / 2, width_mm),
+    width_mm,
+    height_mm: DOOR_HEIGHT_MM,
+    sill_mm: 0,
+    type: "door",
+    swing: { hinge: "a", side },
+  };
 }
 
 /** 휠 줌: 포인터 아래 점을 고정한 채 스케일을 바꾼 뒤의 stage 위치 */

@@ -52,6 +52,7 @@
 }
 
 .editor__stage--wall,
+.editor__stage--door,
 .editor__stage--scale,
 .editor__stage--verify {
   cursor: crosshair;

@@ -1,13 +1,22 @@
-// 좌측 도구 패널: 축척·검증, 벽 그리기/선택/삭제, 두께, 직각 스냅, 저장/검증, 상태.
+// 좌측 도구 패널: 축척·검증, 벽 그리기/선택/삭제, 두께, 직각 스냅, 문 놓기·편집, 저장/검증, 상태.
 import { wallLength } from "./planMath";
 import { renderPxPerMm, usePlanEditor, type Tool } from "./store";
 
 const TOOLS: { id: Tool; label: string; hint: string }[] = [
-  { id: "select", label: "선택", hint: "벽을 클릭해 선택. Delete 로 삭제" },
+  {
+    id: "select",
+    label: "선택",
+    hint: "벽이나 문을 클릭해 선택. Delete 로 삭제",
+  },
   {
     id: "wall",
     label: "벽 그리기",
     hint: "클릭 → 클릭으로 벽을 잇는다. Esc 로 끊기",
+  },
+  {
+    id: "door",
+    label: "문 놓기",
+    hint: "벽 가까이를 클릭해 여닫이문을 놓는다. 클릭한 쪽으로 열린다",
   },
   {
     id: "scale",
@@ -33,8 +42,15 @@ export default function Sidebar() {
   const measureMm = usePlanEditor((s) => s.measureMm);
   const setMeasureMm = usePlanEditor((s) => s.setMeasureMm);
   const selectedWallId = usePlanEditor((s) => s.selectedWallId);
+  const selectedOpeningId = usePlanEditor((s) => s.selectedOpeningId);
   const deleteSelected = usePlanEditor((s) => s.deleteSelected);
   const setSelectedThickness = usePlanEditor((s) => s.setSelectedThickness);
+  const doorWidthMm = usePlanEditor((s) => s.doorWidthMm);
+  const setDoorWidth = usePlanEditor((s) => s.setDoorWidth);
+  const updateSelectedOpening = usePlanEditor((s) => s.updateSelectedOpening);
+  const flipHinge = usePlanEditor((s) => s.flipHinge);
+  const flipSide = usePlanEditor((s) => s.flipSide);
+  const setDefaultSwing = usePlanEditor((s) => s.setDefaultSwing);
   const clearScale = usePlanEditor((s) => s.clearScale);
   const dirty = usePlanEditor((s) => s.dirty);
   const saving = usePlanEditor((s) => s.saving);
@@ -48,6 +64,12 @@ export default function Sidebar() {
   const pxPerMm = renderPxPerMm(plan);
   const hasImage = plan.image !== null;
   const selected = plan.walls.find((w) => w.id === selectedWallId) ?? null;
+  const selectedOpening =
+    plan.openings.find((o) => o.id === selectedOpeningId) ?? null;
+  const selectedOpeningWall = selectedOpening
+    ? (plan.walls.find((w) => w.id === selectedOpening.wall_id) ?? null)
+    : null;
+  const doorCount = plan.openings.filter((o) => o.type === "door").length;
   const verify = plan.scale.verify;
 
   return (
@@ -58,7 +80,8 @@ export default function Sidebar() {
           {TOOLS.map((t) => {
             const disabled = readOnly
               ? t.id !== "select"
-              : (t.id === "wall" || t.id === "verify") && !pxPerMm;
+              : (t.id === "wall" || t.id === "door" || t.id === "verify") &&
+                !pxPerMm;
             return (
               <button
                 key={t.id}
@@ -196,6 +219,122 @@ export default function Sidebar() {
               벽 삭제
             </button>
           </div>
+        )}
+      </section>
+
+      <section className="tool-group">
+        <h2 className="tool-group__title">문 {doorCount}개</h2>
+        {tool === "door" && (
+          <label className="field">
+            <span>새 문 폭 (mm)</span>
+            <input
+              type="number"
+              min={1}
+              step={10}
+              value={doorWidthMm}
+              onChange={(e) => setDoorWidth(Number(e.target.value))}
+            />
+          </label>
+        )}
+        {selectedOpening ? (
+          <div className="selected-wall">
+            <p className="mono">
+              {selectedOpening.id} ·{" "}
+              {selectedOpening.type === "door" ? "문" : "창"} · 벽{" "}
+              {selectedOpening.wall_id}
+              {selectedOpeningWall &&
+                ` (${wallLength(selectedOpeningWall).toLocaleString()} mm)`}
+            </p>
+            <label className="field">
+              <span>벽 시작점에서 (mm)</span>
+              <input
+                type="number"
+                min={0}
+                step={10}
+                value={selectedOpening.offset_mm}
+                disabled={readOnly}
+                onChange={(e) =>
+                  updateSelectedOpening({ offset_mm: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label className="field">
+              <span>폭 (mm)</span>
+              <input
+                type="number"
+                min={1}
+                step={10}
+                value={selectedOpening.width_mm}
+                disabled={readOnly}
+                onChange={(e) =>
+                  updateSelectedOpening({ width_mm: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label className="field">
+              <span>높이 (mm)</span>
+              <input
+                type="number"
+                min={1}
+                step={10}
+                value={selectedOpening.height_mm}
+                disabled={readOnly}
+                onChange={(e) =>
+                  updateSelectedOpening({ height_mm: Number(e.target.value) })
+                }
+              />
+            </label>
+            {selectedOpening.type === "door" &&
+              (selectedOpening.swing ? (
+                <div className="tool-buttons">
+                  <button
+                    type="button"
+                    className="btn btn--small"
+                    disabled={readOnly}
+                    onClick={flipHinge}
+                  >
+                    경첩 반전 (
+                    {selectedOpening.swing.hinge === "a" ? "시작" : "끝"}
+                    쪽)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--small"
+                    disabled={readOnly}
+                    onClick={flipSide}
+                  >
+                    열림 방향 반전 (
+                    {selectedOpening.swing.side === "left" ? "왼쪽" : "오른쪽"})
+                  </button>
+                </div>
+              ) : (
+                <p className="field__hint">
+                  열림 방향이 없는 문입니다. 배치도에서 열림 영역을 판정하려면
+                  설정하세요.{" "}
+                  <button
+                    type="button"
+                    className="btn btn--small"
+                    disabled={readOnly}
+                    onClick={setDefaultSwing}
+                  >
+                    열림 방향 설정
+                  </button>
+                </p>
+              ))}
+            <button
+              type="button"
+              className="btn btn--small btn--danger"
+              disabled={readOnly}
+              onClick={deleteSelected}
+            >
+              {selectedOpening.type === "door" ? "문 삭제" : "창 삭제"}
+            </button>
+          </div>
+        ) : (
+          <p className="field__hint">
+            문 놓기 도구로 벽을 클릭하면 문이 생깁니다. 배치도에서 열림 부채꼴에
+            집기가 들어가면 충돌로 봅니다.
+          </p>
         )}
       </section>
 

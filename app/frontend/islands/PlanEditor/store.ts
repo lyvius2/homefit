@@ -3,14 +3,18 @@ import { create } from "zustand";
 import { ApiError, api } from "~/lib/api";
 import type {
   HouseSummary,
+  Opening,
   Plan,
   PlanViolation,
   Point,
   Wall,
 } from "~/types/domain";
 import {
+  DOOR_WIDTH_MM,
   NO_IMAGE_PX_PER_MM,
+  clampOpeningOffset,
   nextWallId,
+  placeDoor,
   pointPxToMm,
   scaleFromPoints,
   snapRightAngle,
@@ -20,7 +24,7 @@ import {
   type Pt,
 } from "./planMath";
 
-export type Tool = "select" | "wall" | "scale" | "verify";
+export type Tool = "select" | "wall" | "door" | "scale" | "verify";
 
 export interface PlanEditorState {
   houseId: number | null;
@@ -34,7 +38,11 @@ export interface PlanEditorState {
   thickness_mm: number;
   rightAngle: boolean;
   measureMm: number | null;
+  /** 문 도구로 놓을 새 문의 폭 */
+  doorWidthMm: number;
   selectedWallId: string | null;
+  /** 벽과 동시에 선택되지 않는다 */
+  selectedOpeningId: string | null;
   /** 벽 그리기의 시작점(mm) */
   pendingMm: Point | null;
   /** 축척·검증 측정의 첫 점(월드 px) */
@@ -52,9 +60,22 @@ export interface PlanEditorState {
   setThickness: (mm: number) => void;
   toggleRightAngle: () => void;
   setMeasureMm: (mm: number | null) => void;
+  setDoorWidth: (mm: number) => void;
   selectWall: (id: string | null) => void;
+  selectOpening: (id: string | null) => void;
+  /** 선택 벽 또는 선택 문(문이 우선) 삭제 */
   deleteSelected: () => void;
   setSelectedThickness: (mm: number) => void;
+  /** 선택 문의 오프셋·폭·높이. 오프셋은 벽 안으로 묶는다 */
+  updateSelectedOpening: (
+    patch: Partial<Pick<Opening, "offset_mm" | "width_mm" | "height_mm">>,
+  ) => void;
+  /** 경첩을 반대쪽 끝으로 */
+  flipHinge: () => void;
+  /** 열리는 면을 반대쪽으로 */
+  flipSide: () => void;
+  /** swing 이 없는 기존 문에 기본 열림 방향을 준다 */
+  setDefaultSwing: () => void;
   canvasClick: (worldPx: Pt) => void;
   cancelPending: () => void;
   clearScale: () => void;
@@ -77,6 +98,33 @@ function updatePlan(
   return { plan: patch(state.plan), dirty: true, notice: null };
 }
 
+type Setter = (
+  partial:
+    | Partial<PlanEditorState>
+    | ((s: PlanEditorState) => Partial<PlanEditorState>),
+) => void;
+
+/** 선택된 문의 swing 을 고친다. swing 이 없는 문은 allowMissing 일 때만(기본값 부여) */
+function patchSelectedSwing(
+  set: Setter,
+  get: () => PlanEditorState,
+  patch: (swing: NonNullable<Opening["swing"]>) => Opening["swing"],
+  allowMissing = false,
+) {
+  const { selectedOpeningId, readOnly } = get();
+  if (!selectedOpeningId || readOnly) return;
+  set((s) =>
+    updatePlan(s, (plan) => ({
+      ...plan,
+      openings: plan.openings.map((o) => {
+        if (o.id !== selectedOpeningId || o.type !== "door") return o;
+        if (!o.swing && !allowMissing) return o;
+        return { ...o, swing: patch(o.swing ?? { hinge: "a", side: "left" }) };
+      }),
+    })),
+  );
+}
+
 export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   houseId: null,
   house: null,
@@ -89,7 +137,9 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
   thickness_mm: 200,
   rightAngle: true,
   measureMm: null,
+  doorWidthMm: DOOR_WIDTH_MM,
   selectedWallId: null,
+  selectedOpeningId: null,
   pendingMm: null,
   pendingPx: null,
 
@@ -128,6 +178,8 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
       pendingMm: null,
       pendingPx: null,
       selectedWallId: tool === "select" ? get().selectedWallId : null,
+      selectedOpeningId:
+        tool === "select" || tool === "door" ? get().selectedOpeningId : null,
     });
   },
 
@@ -143,21 +195,85 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
     set({ measureMm: mm && mm > 0 ? Math.round(mm) : null, pendingPx: null });
   },
 
+  setDoorWidth(mm) {
+    set({ doorWidthMm: Math.max(1, Math.round(mm)) });
+  },
+
   selectWall(id) {
-    set({ selectedWallId: id });
+    set({ selectedWallId: id, selectedOpeningId: null });
+  },
+
+  selectOpening(id) {
+    set({ selectedOpeningId: id, selectedWallId: null });
   },
 
   deleteSelected() {
-    const id = get().selectedWallId;
-    if (!id || get().readOnly) return;
+    const { selectedWallId, selectedOpeningId, readOnly } = get();
+    if (readOnly) return;
+    if (selectedOpeningId) {
+      set((s) => ({
+        ...updatePlan(s, (plan) => ({
+          ...plan,
+          openings: plan.openings.filter((o) => o.id !== selectedOpeningId),
+        })),
+        selectedOpeningId: null,
+      }));
+      return;
+    }
+    if (!selectedWallId) return;
     set((s) => ({
       ...updatePlan(s, (plan) => ({
         ...plan,
-        walls: plan.walls.filter((w) => w.id !== id),
-        openings: plan.openings.filter((o) => o.wall_id !== id),
+        walls: plan.walls.filter((w) => w.id !== selectedWallId),
+        openings: plan.openings.filter((o) => o.wall_id !== selectedWallId),
       })),
       selectedWallId: null,
     }));
+  },
+
+  updateSelectedOpening(patch) {
+    const { selectedOpeningId, readOnly } = get();
+    if (!selectedOpeningId || readOnly) return;
+    set((s) =>
+      updatePlan(s, (plan) => ({
+        ...plan,
+        openings: plan.openings.map((o) => {
+          if (o.id !== selectedOpeningId) return o;
+          const wall = plan.walls.find((w) => w.id === o.wall_id);
+          const width_mm = Math.max(
+            1,
+            Math.round(patch.width_mm ?? o.width_mm),
+          );
+          const height_mm = Math.max(
+            1,
+            Math.round(patch.height_mm ?? o.height_mm),
+          );
+          const rawOffset = Math.round(patch.offset_mm ?? o.offset_mm);
+          const offset_mm = wall
+            ? clampOpeningOffset(wall, rawOffset, width_mm)
+            : Math.max(0, rawOffset);
+          return { ...o, offset_mm, width_mm, height_mm };
+        }),
+      })),
+    );
+  },
+
+  flipHinge() {
+    patchSelectedSwing(set, get, (swing) => ({
+      ...swing,
+      hinge: swing.hinge === "a" ? "b" : "a",
+    }));
+  },
+
+  flipSide() {
+    patchSelectedSwing(set, get, (swing) => ({
+      ...swing,
+      side: swing.side === "left" ? "right" : "left",
+    }));
+  },
+
+  setDefaultSwing() {
+    patchSelectedSwing(set, get, () => ({ hinge: "a", side: "left" }), true);
   },
 
   setSelectedThickness(mm) {
@@ -267,8 +383,38 @@ export const usePlanEditor = create<PlanEditorState>()((set, get) => ({
         }));
         return;
       }
+      case "door": {
+        const pxPerMm = renderPxPerMm(plan);
+        if (!pxPerMm) {
+          set({
+            notice:
+              "도면 이미지가 있으면 먼저 축척을 설정해야 문을 놓을 수 있습니다.",
+            tool: "scale",
+          });
+          return;
+        }
+        const door = placeDoor(
+          pointPxToMm(worldPx, pxPerMm),
+          plan.walls,
+          plan.openings,
+          state.doorWidthMm,
+        );
+        if (!door) {
+          set({
+            notice:
+              "벽 가까이(300 mm 이내)를 클릭하세요. 문 폭보다 짧은 벽에는 놓을 수 없습니다.",
+          });
+          return;
+        }
+        set((s) => ({
+          ...updatePlan(s, (p) => ({ ...p, openings: [...p.openings, door] })),
+          selectedOpeningId: door.id,
+          selectedWallId: null,
+        }));
+        return;
+      }
       case "select":
-        set({ selectedWallId: null });
+        set({ selectedWallId: null, selectedOpeningId: null });
     }
   },
 
