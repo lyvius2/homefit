@@ -23,7 +23,7 @@ module LayoutVersions
           return failure("fixture_missing", "삭제된 집기가 있어 저장할 수 없습니다.", fixture_ids: validation.missing_fixture_ids)
         end
         unless validation.valid?
-          return failure("collision", "겹침·벽 침범·외곽 이탈이 있어 저장할 수 없습니다.", violations: validation.violations)
+          return failure("collision", "겹침·벽 침범·문 열림 영역·외곽 이탈이 있어 저장할 수 없습니다.", violations: validation.violations)
         end
 
         version_no = (layout.layout_versions.maximum(:version_no) || 0) + 1

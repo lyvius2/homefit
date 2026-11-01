@@ -482,7 +482,184 @@
       "expect": true
     }
   ],
-  "collisions_description": "footprints 는 집기 바닥면 중심·치수·회전. expect 는 위반이 있는 배치만 index 오름차순, reasons 는 overlap(상대 index 오름차순) → wall(벽 순서) → out_of_bounds 순.",
+  "door_zones_description": "여닫이문 열림 영역(설계서 Section 3). wall + opening → 꼭짓점 10개(경첩점 + 90° 호를 8등분한 9점), 6자리 반올림. swing 이 없거나 창이면 null.",
+  "door_zones": [
+    {
+      "id": "hinge_a_right_on_horizontal_wall",
+      "wall": {
+        "id": "w01",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w01",
+        "offset_mm": 1200,
+        "width_mm": 900,
+        "height_mm": 2100,
+        "sill_mm": 0,
+        "type": "door",
+        "swing": {
+          "hinge": "a",
+          "side": "right"
+        }
+      },
+      "expect": [
+        [1200.0, 100.0],
+        [2100.0, 100.0],
+        [2082.706752, 275.58129],
+        [2031.491579, 444.415089],
+        [1948.322651, 600.01321],
+        [1836.396103, 736.396103],
+        [1700.01321, 848.322651],
+        [1544.415089, 931.491579],
+        [1375.58129, 982.706752],
+        [1200.0, 1000.0]
+      ]
+    },
+    {
+      "id": "hinge_b_left_on_horizontal_wall",
+      "wall": {
+        "id": "w01",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w01",
+        "offset_mm": 1200,
+        "width_mm": 900,
+        "height_mm": 2100,
+        "sill_mm": 0,
+        "type": "door",
+        "swing": {
+          "hinge": "b",
+          "side": "left"
+        }
+      },
+      "expect": [
+        [2100.0, -100.0],
+        [1200.0, -100.0],
+        [1217.293248, -275.58129],
+        [1268.508421, -444.415089],
+        [1351.677349, -600.01321],
+        [1463.603897, -736.396103],
+        [1599.98679, -848.322651],
+        [1755.584911, -931.491579],
+        [1924.41871, -982.706752],
+        [2100.0, -1000.0]
+      ]
+    },
+    {
+      "id": "hinge_a_right_on_vertical_wall",
+      "wall": {
+        "id": "w02",
+        "a": [9900, 0],
+        "b": [9900, 6300],
+        "thickness_mm": 200
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w02",
+        "offset_mm": 2000,
+        "width_mm": 800,
+        "height_mm": 2100,
+        "sill_mm": 0,
+        "type": "door",
+        "swing": {
+          "hinge": "a",
+          "side": "right"
+        }
+      },
+      "expect": [
+        [9800.0, 2000.0],
+        [9800.0, 2800.0],
+        [9643.927742, 2784.628224],
+        [9493.853254, 2739.103626],
+        [9355.543814, 2665.17569],
+        [9234.314575, 2565.685425],
+        [9134.82431, 2444.456186],
+        [9060.896374, 2306.146746],
+        [9015.371776, 2156.072258],
+        [9000.0, 2000.0]
+      ]
+    },
+    {
+      "id": "hinge_b_left_on_slanted_wall",
+      "wall": {
+        "id": "w05",
+        "a": [0, 0],
+        "b": [3000, 4000],
+        "thickness_mm": 100
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w05",
+        "offset_mm": 1000,
+        "width_mm": 1000,
+        "height_mm": 2100,
+        "sill_mm": 0,
+        "type": "door",
+        "swing": {
+          "hinge": "b",
+          "side": "left"
+        }
+      },
+      "expect": [
+        [1240.0, 1570.0],
+        [640.0, 770.0],
+        [807.601089, 668.317582],
+        [991.819026, 601.286315],
+        [1185.574419, 571.48217],
+        [1381.421356, 580.050506],
+        [1571.83355, 626.662046],
+        [1749.493567, 709.525535],
+        [1907.574031, 825.456574],
+        [2040.0, 970.0]
+      ]
+    },
+    {
+      "id": "door_without_swing_has_no_zone",
+      "wall": {
+        "id": "w01",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w01",
+        "offset_mm": 1200,
+        "width_mm": 900,
+        "height_mm": 2100,
+        "sill_mm": 0,
+        "type": "door"
+      },
+      "expect": null
+    },
+    {
+      "id": "window_has_no_zone",
+      "wall": {
+        "id": "w01",
+        "a": [0, 0],
+        "b": [9900, 0],
+        "thickness_mm": 200
+      },
+      "opening": {
+        "id": "o01",
+        "wall_id": "w01",
+        "offset_mm": 1200,
+        "width_mm": 900,
+        "height_mm": 1200,
+        "sill_mm": 900,
+        "type": "window"
+      },
+      "expect": null
+    }
+  ],
+  "collisions_description": "footprints 는 집기 바닥면 중심·치수·회전. expect 는 위반이 있는 배치만 index 오름차순, reasons 는 overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds 순. openings 는 선택(없으면 빈 배열).",
   "collisions": [
     {
       "id": "no_violations",
@@ -923,6 +1100,228 @@
         "max_x": 10000,
         "max_y": 6400
       }
+    },
+    {
+      "id": "fixture_inside_door_swing",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door",
+          "swing": {
+            "hinge": "a",
+            "side": "right"
+          }
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1500,
+          "y": 600,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["door:o01"]
+        }
+      ]
+    },
+    {
+      "id": "touching_door_swing_is_ok",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door",
+          "swing": {
+            "hinge": "a",
+            "side": "right"
+          }
+        }
+      ],
+      "footprints": [
+        {
+          "x": 2300,
+          "y": 300,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "door_without_swing_is_ignored",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door"
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1500,
+          "y": 600,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": []
+    },
+    {
+      "id": "wall_then_door_reason_order",
+      "walls": [
+        {
+          "id": "w01",
+          "a": [0, 0],
+          "b": [9900, 0],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w02",
+          "a": [9900, 0],
+          "b": [9900, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w03",
+          "a": [9900, 6300],
+          "b": [0, 6300],
+          "thickness_mm": 200
+        },
+        {
+          "id": "w04",
+          "a": [0, 6300],
+          "b": [0, 0],
+          "thickness_mm": 200
+        }
+      ],
+      "openings": [
+        {
+          "id": "o01",
+          "wall_id": "w01",
+          "offset_mm": 1200,
+          "width_mm": 900,
+          "height_mm": 2100,
+          "sill_mm": 0,
+          "type": "door",
+          "swing": {
+            "hinge": "a",
+            "side": "right"
+          }
+        }
+      ],
+      "footprints": [
+        {
+          "x": 1300,
+          "y": 150,
+          "width": 400,
+          "depth": 400,
+          "rotation_deg": 0
+        }
+      ],
+      "expect": [
+        {
+          "placement_index": 0,
+          "reasons": ["wall:w01", "door:o01"]
+        }
+      ]
     }
   ]
 }

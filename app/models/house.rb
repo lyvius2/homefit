@@ -32,6 +32,7 @@ class House < ApplicationRecord
   validate :plan_matches_schema
 
   def walls = plan.fetch("walls", [])
+  def openings = plan.fetch("openings", [])
 
   # 외곽 바운딩 박스(Plans::Bounds::Box) 또는 벽이 없으면 nil
   def bounds = Plans::Bounds.call(plan)

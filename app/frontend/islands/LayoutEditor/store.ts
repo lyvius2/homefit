@@ -166,6 +166,7 @@ export function computeViolations(
       depth: w.depth_mm,
       rotation_deg: w.rotation_deg,
     })),
+    plan?.openings ?? [],
   );
   const byIndex = new Map(geometry.map((v) => [v.placement_index, v]));
   working.forEach((w, i) => {
@@ -429,7 +430,7 @@ export const useLayoutEditor = create<LayoutEditorState>()((set, get) => ({
           serverViolations: check.violations,
           violations: check.violations,
           notice:
-            "서버 판정: 겹침·벽 침범·외곽 이탈이 있어 저장할 수 없습니다.",
+            "서버 판정: 겹침·벽 침범·문 열림 영역·외곽 이탈이 있어 저장할 수 없습니다.",
         });
         return false;
       }

@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import fixtures from "../../../docs/geometry-fixtures.json";
+import type { Opening, Wall } from "~/types/domain";
 import {
   EPSILON,
+  doorZone,
   obbCorners,
   obbFromFootprint,
   obbFromSegment,
+  polygonAxes,
   satIntersects,
   type Obb,
 } from "./geometry";
@@ -32,6 +35,12 @@ interface Fixtures {
   epsilon: number;
   corners: { id: string; shape: Shape; expect: [number, number][] }[];
   sat: { id: string; a: Shape; b: Shape; expect: boolean }[];
+  door_zones: {
+    id: string;
+    wall: Wall;
+    opening: Opening;
+    expect: [number, number][] | null;
+  }[];
 }
 
 const data = fixtures as unknown as Fixtures;
@@ -77,6 +86,27 @@ describe("geometry fixtures", () => {
         const b = build(c.b);
         expect(satIntersects(a, b)).toBe(c.expect);
         expect(satIntersects(b, a)).toBe(c.expect);
+      });
+    }
+  });
+
+  describe("door_zones", () => {
+    for (const c of data.door_zones) {
+      it(c.id, () => {
+        const zone = doorZone(c.wall, c.opening);
+        if (c.expect === null) {
+          expect(zone).toBeNull();
+          return;
+        }
+        expect(zone).not.toBeNull();
+        if (!zone) return;
+        expect(zone.corners.map(([x, y]) => [round6(x), round6(y)])).toEqual(
+          c.expect,
+        );
+        const axes = polygonAxes(zone);
+        expect(axes).toHaveLength(zone.corners.length);
+        for (const [ux, uy] of axes)
+          expect(Math.hypot(ux, uy)).toBeCloseTo(1, 9);
       });
     }
   });

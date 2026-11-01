@@ -8,7 +8,7 @@ module Geometry
     FIXTURES.fetch("collisions").each do |c|
       test "collisions: #{c['id']}" do
         footprints = c.fetch("footprints").map { |f| f.symbolize_keys }
-        actual = Collisions.check(walls: c.fetch("walls"), footprints:)
+        actual = Collisions.check(walls: c.fetch("walls"), footprints:, openings: c.fetch("openings", []))
 
         assert_equal c.fetch("expect"), actual.map { |v| v.transform_keys(&:to_s) }
 

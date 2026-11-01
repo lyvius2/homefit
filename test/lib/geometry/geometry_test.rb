@@ -51,5 +51,18 @@ module Geometry
         assert_equal c.fetch("expect"), Sat.intersect?(b, a), "symmetry"
       end
     end
+
+    FIXTURES.fetch("door_zones").each do |c|
+      test "door_zone: #{c['id']}" do
+        zone = DoorZone.call(wall: c.fetch("wall"), opening: c.fetch("opening"))
+        if c.fetch("expect").nil?
+          assert_nil zone
+        else
+          assert_equal c.fetch("expect"), zone.corners.map { |x, y| [ x.round(6), y.round(6) ] }
+          assert_equal zone.corners.size, zone.axes.size
+          zone.axes.each { |ux, uy| assert_in_delta 1.0, Math.hypot(ux, uy), 1e-9 }
+        end
+      end
+    end
   end
 end

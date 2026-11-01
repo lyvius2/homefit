@@ -55,6 +55,19 @@ module Placements
       ], result.violations
     end
 
+    test "reports door swing zone intrusion after wall reasons" do
+      @house.update!(plan: @house.plan.merge("openings" => [
+        { "id" => "o01", "wall_id" => "w01", "offset_mm" => 1200, "width_mm" => 900, "height_mm" => 2100, "sill_mm" => 0, "type" => "door",
+          "swing" => { "hinge" => "a", "side" => "right" } }
+      ]))
+      result = Placements::Validate.call(house: @house, placements: [
+        placement(@fridge, 1500, 600),   # 부채꼴 안
+        placement(@fridge, 5000, 3000)
+      ])
+
+      assert_equal [ { placement_index: 0, reasons: [ "door:o01" ] } ], result.violations
+    end
+
     test "house without walls only checks overlaps" do
       @house.update!(plan: House::DEFAULT_PLAN)
       result = Placements::Validate.call(house: @house, placements: [ placement(@fridge, -99_999, 0) ])

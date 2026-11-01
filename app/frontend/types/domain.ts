@@ -127,7 +127,7 @@ export interface LayoutSummary {
 /** 배치 판정 결과 (설계서 Section 3) */
 export interface PlacementViolation {
   placement_index: number;
-  reasons: string[]; // "overlap:<index>" | "wall:<wall_id>" | "out_of_bounds" | "fixture_missing"
+  reasons: string[]; // "overlap:<index>" | "wall:<wall_id>" | "door:<opening_id>" | "out_of_bounds" | "fixture_missing"
 }
 
 /** 도면 판정 결과 */

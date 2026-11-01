@@ -1,5 +1,5 @@
 module Placements
-  # 배치 목록의 집기 간 겹침·벽 침범·외곽 이탈 판정 (R-08). 기하는 Geometry::Collisions 가 한다.
+  # 배치 목록의 집기 간 겹침·벽 침범·문 열림 영역 침범·외곽 이탈 판정 (R-08). 기하는 Geometry::Collisions 가 한다.
   # placements: [{ fixture_id:, x_mm:, y_mm:, z_mm:, rotation_deg: }] (정수). 삭제된 집기는 "fixture_missing".
   class Validate
     Result = Data.define(:violations, :missing_fixture_ids, :fixtures) do
@@ -29,7 +29,7 @@ module Placements
       end
 
       index_map = present.map(&:last)
-      geometry = Geometry::Collisions.check(walls: @house.walls, footprints: present.map(&:first))
+      geometry = Geometry::Collisions.check(walls: @house.walls, footprints: present.map(&:first), openings: @house.openings)
       violations = geometry.map do |v|
         {
           placement_index: index_map.fetch(v[:placement_index]),

@@ -1,12 +1,17 @@
-// 집기 풋프린트 간 겹침, 벽 침범, 외곽 이탈 판정 (설계서 Section 3, R-08).
+// 집기 풋프린트 간 겹침, 벽 침범, 문 열림 영역 침범, 외곽 이탈 판정 (설계서 Section 3, R-08).
 // Ruby 구현(app/lib/geometry/{bounds,collisions}.rb)과 같은 테스트 벡터(docs/geometry-fixtures.json)로 검증한다.
-import type { PlacementViolation, Wall } from "~/types/domain";
+import type { Opening, PlacementViolation, Wall } from "~/types/domain";
 import {
+  convexIntersects,
+  convexOfObb,
+  convexOfPolygon,
+  doorZone,
   obbCorners,
   obbFromFootprint,
   obbFromSegment,
   satIntersects,
   type Obb,
+  type Polygon,
 } from "./geometry";
 
 export interface Footprint {
@@ -61,10 +66,27 @@ function outside(box: Obb, bounds: Bounds): boolean {
   );
 }
 
-/** 위반이 있는 배치만, index 오름차순. reasons 순서: overlap(상대 index 오름차순) → wall(벽 순서) → out_of_bounds */
+/** 영역이 있는 문만, openings 순서대로 */
+export function doorZonesOf(
+  walls: readonly Wall[],
+  openings: readonly Opening[],
+): { id: string; zone: Polygon }[] {
+  const byId = new Map(walls.map((w) => [w.id, w]));
+  const zones: { id: string; zone: Polygon }[] = [];
+  for (const opening of openings) {
+    const wall = byId.get(opening.wall_id);
+    if (!wall) continue;
+    const zone = doorZone(wall, opening);
+    if (zone) zones.push({ id: opening.id, zone });
+  }
+  return zones;
+}
+
+/** 위반이 있는 배치만, index 오름차순. reasons 순서: overlap(상대 index 오름차순) → wall(벽 순서) → door(개구부 순서) → out_of_bounds */
 export function checkCollisions(
   walls: readonly Wall[],
   footprints: readonly Footprint[],
+  openings: readonly Opening[] = [],
 ): PlacementViolation[] {
   const boxes = footprints.map(obbFromFootprint);
   const wallBoxes = walls.map((w) => ({
@@ -77,6 +99,10 @@ export function checkCollisions(
       thickness: w.thickness_mm,
     }),
   }));
+  const doorZones = doorZonesOf(walls, openings).map(({ id, zone }) => ({
+    id,
+    convex: convexOfPolygon(zone),
+  }));
   const bounds = boundsOfWalls(walls);
 
   const violations: PlacementViolation[] = [];
@@ -87,6 +113,11 @@ export function checkCollisions(
     });
     for (const wall of wallBoxes) {
       if (satIntersects(box, wall.box)) reasons.push(`wall:${wall.id}`);
+    }
+    const convex = convexOfObb(box);
+    for (const door of doorZones) {
+      if (convexIntersects(convex, door.convex))
+        reasons.push(`door:${door.id}`);
     }
     if (bounds && outside(box, bounds)) reasons.push("out_of_bounds");
     if (reasons.length > 0) violations.push({ placement_index: i, reasons });

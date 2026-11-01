@@ -12,6 +12,7 @@ function reasonLabel(reason: string, names: readonly string[]): string {
   if (reason === "out_of_bounds") return "외곽 이탈";
   if (reason === "fixture_missing") return "삭제된 집기";
   if (reason.startsWith("wall:")) return `벽 ${reason.slice(5)} 침범`;
+  if (reason.startsWith("door:")) return `문 ${reason.slice(5)} 열림 영역 침범`;
   if (reason.startsWith("overlap:"))
     return `${names[Number(reason.slice(8))] ?? "?"} 와 겹침`;
   return reason;
