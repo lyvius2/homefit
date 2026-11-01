@@ -1,0 +1,32 @@
+# HomeFit — Mac mini 1대에서 docker compose 로 띄운다. DB 는 외부 MySQL (.env 의 HOMEFIT_DB_*).
+#
+#   cp .env.example .env            # HOMEFIT_DB_*, SECRET_KEY_BASE, HOMEFIT_SEED_USERS 채우기
+#   docker compose build
+#   docker compose run --rm web bin/rails db:seed   # 최초 1회: 계정 + 예시 데이터
+#   docker compose up -d                            # http://<mac-mini>:3000
+#
+services:
+  web:
+    build: .
+    image: homefit:latest
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-3}
+      PORT: "3000"
+    ports:
+      - "${HOMEFIT_PORT:-3000}:3000"
+    volumes:
+      # Active Storage(Disk) 업로드 파일. 백업 대상: 이 볼륨 + mysqldump
+      - homefit-storage:/rails/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  homefit-storage:

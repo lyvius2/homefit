@@ -353,7 +353,7 @@ violations: Violation[]     // 클라이언트 판정 결과, 60fps 아닌 point
 | M4 | S-03 도면 에디터 | 실제 도면 이미지로 축척·검증·벽 그리기 → 저장 |
 | M5 | S-06 배치 에디터 | 드래그 배치, 충돌 표시, 버전 저장·전환 |
 | M6 | S-07 아카이브, 마감(에러 화면, 모바일 보기 전용, 삭제 경고) | 요구사항 1–8 체크리스트 통과 |
-| M7 | Mac mini 배포(Puma + MySQL, 백업 스크립트) | 두 기기에서 접속 |
+| M7 | Mac mini 배포(Docker compose: Puma 컨테이너 + 외부 MySQL, 백업은 mysqldump + storage 볼륨. ADR 0003) | 두 기기에서 접속 |
 
 ---
 

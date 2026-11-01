@@ -37,6 +37,18 @@ bin/rails test:system        # 브라우저 시스템 테스트 (Chrome)
 bin/rails console            # 시드 데이터 확인: House.first.plan, Layout.first.latest_version.placements
 ```
 
+## 배포 (Docker, Mac mini)
+
+```bash
+cp .env.example .env                              # HOMEFIT_DB_*, SECRET_KEY_BASE(bin/rails secret), HOMEFIT_SEED_USERS
+docker compose build                              # Ruby 3.4 + libvips + Vite 빌드가 든 이미지
+docker compose run --rm web bin/rails db:seed     # 최초 1회: 로그인 계정과 예시 데이터
+docker compose up -d                              # http://<mac-mini>:3000 (HOMEFIT_PORT 로 변경)
+docker compose logs -f web                        # JSON 로그 (lograge)
+```
+
+DB 는 외부 MySQL 을 그대로 쓰고 업로드 파일은 `homefit-storage` 볼륨에 쌓입니다. 마이그레이션은 컨테이너가 뜰 때 자동 적용됩니다. 자세한 결정은 [docs/decisions/0003-docker-single-db.md](docs/decisions/0003-docker-single-db.md).
+
 ## 저장소 지도
 
 ```

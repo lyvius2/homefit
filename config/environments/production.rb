@@ -25,10 +25,11 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = true
+  # Mac mini 의 LAN 에서 http 로 접속한다. 앞에 TLS 프록시를 두면 HOMEFIT_FORCE_SSL=1 로 켠다 (ADR 0003).
+  config.assume_ssl = ENV["HOMEFIT_FORCE_SSL"] == "1"
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  config.force_ssl = ENV["HOMEFIT_FORCE_SSL"] == "1"
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
