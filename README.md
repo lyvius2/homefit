@@ -1,5 +1,13 @@
 # HomeFit
 
+![Ruby](https://img.shields.io/badge/Ruby-3.4-CC342D?logo=ruby&logoColor=white)
+![Rails](https://img.shields.io/badge/Rails-8.1-D30001?logo=rubyonrails&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![three.js](https://img.shields.io/badge/three.js-R3F-000000?logo=threedotjs&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)
+
 도면 이미지 위에 벽을 그려 3D 주택을 만들고, 실제 치수를 가진 집기(가구·가전)를 배치해 "들어가는지, 동선이 나오는지"를 확인하는 개인용 웹앱입니다. 배치는 저장할 때마다 불변 버전으로 쌓입니다.
 
 설계의 기준 문서는 [docs/DESIGN.md](docs/DESIGN.md)이고, 코딩 규칙은 [AGENTS.md](AGENTS.md)에 있습니다.
