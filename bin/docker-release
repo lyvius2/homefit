@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Docker Hub 에 production 이미지를 올린다 (개발 Mac 에서 실행). README "운영" 7 절.
+#
+#   bin/docker-release            # 태그 = 현재 커밋 short SHA, 그리고 latest
+#   bin/docker-release v1         # 태그를 직접 지정 (latest 도 같이)
+#   PLATFORMS=linux/arm64 bin/docker-release   # 기본은 linux/arm64,linux/amd64
+#
+# 필요: docker login 완료, .env(또는 환경변수)의 HOMEFIT_IMAGE (예: docker.io/<id>/homefit)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [ -f .env ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ./.env
+  set +a
+fi
+: "${HOMEFIT_IMAGE:?HOMEFIT_IMAGE 가 없습니다. .env 에 HOMEFIT_IMAGE=docker.io/<docker-hub-id>/homefit 을 넣으세요}"
+
+TAG="${1:-$(git rev-parse --short HEAD)}"
+PLATFORMS="${PLATFORMS:-linux/arm64,linux/amd64}"
+BUILDER="homefit-builder"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "경고: 커밋하지 않은 변경이 있습니다. 태그 ${TAG} 는 HEAD 커밋을 가리키지만 이미지에는 작업 트리가 들어갑니다." >&2
+fi
+
+if ! docker buildx inspect "$BUILDER" >/dev/null 2>&1; then
+  docker buildx create --name "$BUILDER" --driver docker-container >/dev/null
+fi
+
+echo "build+push ${HOMEFIT_IMAGE}:${TAG} and :latest (${PLATFORMS})"
+docker buildx build \
+  --builder "$BUILDER" \
+  --platform "$PLATFORMS" \
+  --tag "${HOMEFIT_IMAGE}:${TAG}" \
+  --tag "${HOMEFIT_IMAGE}:latest" \
+  --push \
+  .
+
+echo "pushed ${HOMEFIT_IMAGE}:${TAG} and ${HOMEFIT_IMAGE}:latest"
+echo "Mac mini: .env 에 HOMEFIT_IMAGE=${HOMEFIT_IMAGE} 를 넣고  docker compose pull && docker compose up -d"

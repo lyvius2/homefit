@@ -68,13 +68,15 @@ openssl rand -hex 64        # SECRET_KEY_BASE 값으로 붙여 넣는다
 | `SECRET_KEY_BASE` | `openssl rand -hex 64` 결과 | 세션 쿠키 서명. 바꾸면 전원 로그아웃 |
 | `HOMEFIT_SEED_USERS` | `a@x.com:비밀번호,b@y.com:비밀번호` | 로그인 계정 2개. 회원가입 화면이 없으므로 여기서만 만듭니다 |
 | `HOMEFIT_PORT` | `3000` | 호스트(Mac mini)에서 열 포트 |
+| `HOMEFIT_IMAGE` / `HOMEFIT_IMAGE_TAG` | `docker.io/<id>/homefit` / `latest` | Docker Hub 에서 받을 이미지. 비우면 로컬 빌드 `homefit:latest` |
 | `HOMEFIT_FORCE_SSL` | `0` | TLS 프록시 뒤에 둘 때만 `1` |
 | `RAILS_LOG_LEVEL` / `RAILS_MAX_THREADS` | 생략 가능 | 기본 `info` / `3` |
 
 ### 2. 처음 띄우기
 
 ```bash
-docker compose build          # Ruby 3.4 + libvips + Vite 빌드가 든 이미지 homefit:latest (수 분)
+docker compose pull           # Docker Hub 에서 이미지를 받는다 (.env 의 HOMEFIT_IMAGE). 아래 7 에서 올린 것
+                              # Hub 를 쓰지 않으면 대신 docker compose build (Ruby 3.4 + libvips + Vite 빌드, 수 분)
 docker compose up -d          # 컨테이너 시작. entrypoint 가 db:prepare 실행:
                               #   DB 가 없으면 생성 → 스키마 → 시드(계정 + 예시 주택·집기·배치 1건)
                               #   DB 가 있으면 미적용 마이그레이션만
@@ -99,7 +101,8 @@ docker compose run --rm web bin/rails db:seed     # 이미 있는 계정·데이
 
 ```bash
 docker compose stop / start / restart         # 중지 · 재개 · 재시작 (데이터 유지)
-git pull && docker compose build && docker compose up -d   # 코드 갱신. 마이그레이션은 기동 시 자동
+docker compose pull && docker compose up -d   # 새 이미지로 갱신 (개발 Mac 에서 bin/docker-release 로 올린 뒤). 마이그레이션은 기동 시 자동
+git pull                                      # compose.yml·.env.example 이 바뀌었을 때만 필요. 직접 빌드할 때는 docker compose build
 docker compose run --rm web bin/rails console              # 콘솔
 ```
 
@@ -123,7 +126,7 @@ docker run --rm -v homefit_homefit-storage:/data -v "$PWD":/backup alpine tar cz
 docker compose stop                     # 1. 컨테이너만 중지. 볼륨·이미지·DB 그대로
 docker compose down                     # 2. 컨테이너 + 네트워크 제거. 볼륨(업로드 파일)·이미지·DB 유지
 docker compose down -v                  # 3. 2 + 볼륨 homefit_homefit-storage 삭제 (업로드 파일 사라짐)
-docker compose down -v --rmi all        # 4. 3 + 이미지 homefit:latest 삭제
+docker compose down -v --rmi all        # 4. 3 + 이미지(HOMEFIT_IMAGE 또는 homefit:latest) 삭제
 docker builder prune                    # 5. 빌드 캐시까지 정리 (선택)
 ```
 
@@ -144,6 +147,22 @@ docker compose up -d                    # 다시 생성 → 스키마 → 시드
 ```bash
 docker compose run --rm -e DISABLE_DATABASE_ENVIRONMENT_CHECK=1 web bin/rails db:seed:replant
 ```
+
+### 7. Docker Hub 에 올리기 (개발 Mac 에서)
+
+Mac mini 는 빌드하지 않고 Hub 의 이미지를 받기만 합니다. 올리는 쪽은 개발 Mac 입니다.
+
+```bash
+docker login                         # Docker Hub 계정 (1회)
+# .env 에 HOMEFIT_IMAGE=docker.io/<docker-hub-id>/homefit  (저장소는 비공개로 만들어 두는 것을 권장)
+bin/docker-release                   # 현재 커밋을 빌드해 :<short-sha> 와 :latest 로 push
+bin/docker-release v1                # 태그를 직접 줄 때
+PLATFORMS=linux/arm64 bin/docker-release   # Mac mini 가 Apple Silicon 이면 arm64 만 (기본은 arm64+amd64, amd64 는 QEMU 라 느림)
+```
+
+- 커밋하지 않은 변경이 있으면 경고만 하고 그대로 빌드합니다. 올린 태그는 `git log --oneline` 의 short SHA 와 같으니 되돌릴 때 `.env` 의 `HOMEFIT_IMAGE_TAG` 를 그 값으로 바꾸고 `docker compose pull && docker compose up -d` 합니다.
+- 이미지에는 `.env`, `config/master.key`, `storage/`, `test/`, `docs/` 가 들어가지 않습니다(`.dockerignore`). 비밀값은 전부 실행 시 `.env` 로 들어갑니다.
+- 최초 1회 `docker buildx create` 로 `homefit-builder`(docker-container 드라이버)를 만듭니다. 멀티 플랫폼 push 에 필요하며 스크립트가 알아서 합니다.
 
 ## 저장소 지도
 

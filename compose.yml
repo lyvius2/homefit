@@ -1,14 +1,16 @@
 # HomeFit — Mac mini 1대에서 docker compose 로 띄운다. DB 는 외부 MySQL (.env 의 HOMEFIT_DB_*).
 #
-#   cp .env.example .env            # HOMEFIT_DB_*, SECRET_KEY_BASE, HOMEFIT_SEED_USERS 채우기
-#   docker compose build
+#   cp .env.example .env            # HOMEFIT_DB_*, SECRET_KEY_BASE, HOMEFIT_SEED_USERS, HOMEFIT_IMAGE 채우기
+#   docker compose pull             # Docker Hub 의 이미지(HOMEFIT_IMAGE:HOMEFIT_IMAGE_TAG)를 받는다. 직접 빌드하려면 docker compose build
 #   docker compose up -d            # 최초 기동 시 DB 생성 + 스키마 + 시드(계정·예시 데이터), 이후는 마이그레이션만
 #                                   # http://<mac-mini>:3000  — 운영 절차 전체는 README.md "운영" 절
+#   Docker Hub 에 올리는 쪽(개발 Mac)은 bin/docker-release
 #
 services:
   web:
     build: .
-    image: homefit:latest
+    # .env 의 HOMEFIT_IMAGE(예: docker.io/<id>/homefit) 가 없으면 로컬 빌드 이름 homefit:latest
+    image: ${HOMEFIT_IMAGE:-homefit}:${HOMEFIT_IMAGE_TAG:-latest}
     env_file: .env
     environment:
       RAILS_ENV: production
