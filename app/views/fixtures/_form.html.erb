@@ -22,20 +22,20 @@
   </div>
 
   <p class="field__hint">
-    W는 정면에서 본 좌우 너비, D는 앞뒤 깊이, H는 높이입니다. 모두 정수 mm. 정면 이미지는 3D 박스의 앞면에 붙습니다.
+    W는 정면에서 본 좌우 너비, H는 높이, D는 앞뒤 깊이입니다. 모두 정수 mm. 정면 이미지는 3D 박스의 앞면에 붙습니다.
   </p>
   <div class="form__row form__row--3">
     <div class="field <%= "field--invalid" if fixture.errors[:width_mm].any? %>">
       <%= form.label :width_mm, "W 너비 (mm)" %>
       <%= form.number_field :width_mm, min: 10, max: 10_000, step: 1, required: true %>
     </div>
-    <div class="field <%= "field--invalid" if fixture.errors[:depth_mm].any? %>">
-      <%= form.label :depth_mm, "D 깊이 (mm)" %>
-      <%= form.number_field :depth_mm, min: 10, max: 10_000, step: 1, required: true %>
-    </div>
     <div class="field <%= "field--invalid" if fixture.errors[:height_mm].any? %>">
       <%= form.label :height_mm, "H 높이 (mm)" %>
       <%= form.number_field :height_mm, min: 10, max: 5_000, step: 1, required: true %>
+    </div>
+    <div class="field <%= "field--invalid" if fixture.errors[:depth_mm].any? %>">
+      <%= form.label :depth_mm, "D 깊이 (mm)" %>
+      <%= form.number_field :depth_mm, min: 10, max: 10_000, step: 1, required: true %>
     </div>
   </div>
 
