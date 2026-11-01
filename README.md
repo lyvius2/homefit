@@ -106,7 +106,13 @@ git pull                                      # compose.yml·.env.example 이 �
 docker compose run --rm web bin/rails console              # 콘솔
 ```
 
-- 비밀번호 변경·계정 추가는 콘솔에서: `User.find_by!(email_address: "a@x.com").update!(password: "새값")`, `User.create!(email_address:, password:)`.
+- 계정 추가는 `.env` 의 `HOMEFIT_SEED_USERS` 에 `이메일:비밀번호` 를 덧붙인 뒤 시드를 다시 돌립니다. 회원가입 화면은 없습니다.
+
+```bash
+docker compose run --rm web bin/rails db:seed     # 새 계정만 만들고, 이미 있는 계정·데이터는 건드리지 않음
+```
+
+- 비밀번호 변경은 콘솔에서: `User.find_by!(email_address: "a@x.com").update!(password: "새값")`. 콘솔로 계정을 만들 수도 있습니다: `User.create!(email_address:, password:)`.
 - 데이터 위치: DB 는 외부 MySQL `homefit_production`, 업로드 파일(도면·집기 이미지)은 Docker 볼륨 `homefit_homefit-storage`.
 
 백업은 둘을 짝으로 받습니다.
