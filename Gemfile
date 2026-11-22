@@ -60,4 +60,4 @@ gem "json_schemer", "~> 2.5"
 
 gem "erb_lint", "~> 0.9.0", groups: [ :development, :test ], require: false
 
-gem "lograge", "~> 0.15.1"
+gem "lograge", "~> 0.16.0"
